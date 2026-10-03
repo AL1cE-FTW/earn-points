@@ -8,19 +8,24 @@
 
 ## 画面デモ（github.io）
 
-`site/index.html` は、画面の見た目と操作感を確かめるためのデモです。ブラウザだけで動き、サーバは要りません。`main` に取り込まれると、GitHub Actions が自動で GitHub Pages に公開します（公開先: `https://al1ce-ftw.github.io/earn-points/`）。
+`site/` は、制度の紹介と画面の見た目・操作感を確かめるためのデモです。ブラウザだけで動き、サーバは要りません。`main` に取り込まれると、GitHub Actions が自動で GitHub Pages に公開します。
 
 - **最初の1回だけ必要な設定**: リポジトリの Settings → Pages → Build and deployment の Source を「GitHub Actions」にする
 - データは見ている人のブラウザの中だけに保存され、ほかの端末とは共有されません。実在の個人情報は入力しないでください
-- 上部の「デモの日付」を変えると、ツアーの催行完了やポイント失効を試せます
+- スタッフ画面の「デモの日付」を変えると、ツアーの催行完了やポイント失効を試せます
 - 制度の計算ルールは Python 版（`points/`）と同じです（ブラウザ版のロジックは `site/points.js`）
 
 | 画面 | URL | 使う人 |
 |---|---|---|
-| スタッフ画面 | `https://al1ce-ftw.github.io/earn-points/` | 窓口スタッフ（PC） |
-| 会員向けスマホ画面 | `https://al1ce-ftw.github.io/earn-points/member/` | 旅行客（スマートフォン） |
+| 制度のご案内（トップ） | `https://al1ce-ftw.github.io/earn-points/` | これから入会する方・会員 |
+| 会員アプリ | `https://al1ce-ftw.github.io/earn-points/member/` | 旅行客（スマートフォン・PC） |
+| スタッフ画面 | `https://al1ce-ftw.github.io/earn-points/admin/` | 窓口スタッフ（PC） |
 
-会員向けスマホ画面は、会員証の表示、保有ポイント、ランクの進み具合、次のツアー、ポイント履歴、暗証番号の変更ができます。同じブラウザなら、スタッフ画面で行った予約やポイント付与がすぐ反映されます。
+会員アプリでは、会員証の表示、保有ポイント、ランクの進み具合、次のツアー、ポイント履歴、暗証番号の変更ができます。同じブラウザなら、スタッフ画面で行った予約やポイント付与がすぐ反映されます。
+
+PC で見ているときは、画面右下の「PC表示／スマホ表示」でスマホの画面に切り替えて確認できます。
+
+デザインは `site/assets/ui.css` に集約しています（紺を基調に真鍮色の差し色、見出しは明朝体・本文はゴシック体。いずれも端末内の書体で、Web フォント等の外部サービスは使っていません）。
 
 GitHub Pages は静的なファイルを公開する仕組みで、サーバ側のプログラムは動かせません（出典: [GitHub Docs「About GitHub Pages」](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages)）。複数の端末で会員データを共有する本番運用には、`points/` のようにサーバとして動く版が必要です。
 
