@@ -13,7 +13,14 @@
 - **最初の1回だけ必要な設定**: リポジトリの Settings → Pages → Build and deployment の Source を「GitHub Actions」にする
 - データは見ている人のブラウザの中だけに保存され、ほかの端末とは共有されません。実在の個人情報は入力しないでください
 - 上部の「デモの日付」を変えると、ツアーの催行完了やポイント失効を試せます
-- 制度の計算ルールは Python 版（`points/`）と同じです
+- 制度の計算ルールは Python 版（`points/`）と同じです（ブラウザ版のロジックは `site/points.js`）
+
+| 画面 | URL | 使う人 |
+|---|---|---|
+| スタッフ画面 | `https://al1ce-ftw.github.io/earn-points/` | 窓口スタッフ（PC） |
+| 会員向けスマホ画面 | `https://al1ce-ftw.github.io/earn-points/member/` | 旅行客（スマートフォン） |
+
+会員向けスマホ画面は、会員証の表示、保有ポイント、ランクの進み具合、次のツアー、ポイント履歴、暗証番号の変更ができます。同じブラウザなら、スタッフ画面で行った予約やポイント付与がすぐ反映されます。
 
 GitHub Pages は静的なファイルを公開する仕組みで、サーバ側のプログラムは動かせません（出典: [GitHub Docs「About GitHub Pages」](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages)）。複数の端末で会員データを共有する本番運用には、`points/` のようにサーバとして動く版が必要です。
 
