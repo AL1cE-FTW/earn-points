@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b2140">
+<title>道ツアー提案版｜スタッフ画面</title>
+<link rel="stylesheet" href="../../assets/ui.css">
+<style>
+/* Layout: PC は左に紺のサイドバー（メニューとデモ操作）、右に作業領域。スマホは上部バー＋横スクロールのメニュー */
+.shell{min-height:100vh;display:grid;grid-template-columns:1fr}
+.side{background:var(--navy);color:var(--on-navy);padding:calc(.8rem + env(safe-area-inset-top,0px)) 16px .8rem;display:grid;gap:.8rem;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:.6rem;color:var(--on-navy);text-decoration:none}
+.brand svg{width:28px;height:28px;flex:none}
+.brand b{font-family:var(--font-display);font-weight:600;letter-spacing:.12em;font-size:1rem;display:block;line-height:1.2}
+.brand small{display:block;font-size:.6rem;letter-spacing:.3em;color:#e2cfa9}
+.menu{display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding-inline:4px}
+.menu button{font:inherit;font-size:var(--t-sm);font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border-radius:10px;border:0;background:transparent;color:var(--on-navy-2);cursor:pointer;white-space:nowrap}
+.menu button:hover{color:var(--on-navy);background:rgba(255,255,255,.06)}
+.menu button[aria-current="page"]{color:var(--on-navy);background:rgba(255,255,255,.1)}
+.menu svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.demo{display:none}
+.side .links{display:none}
+.work{min-width:0;padding-inline:clamp(16px,3vw,44px);padding-block:1.4rem 5rem;display:grid;gap:1.2rem;align-content:start;max-width:1240px;width:100%}
+.mobile-demo{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:var(--t-xs);color:var(--warn-ink);background:var(--warn-bg);padding:.55rem .8rem;border-radius:var(--radius-sm)}
+.mobile-demo input{font:inherit;padding:.2rem .4rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem;justify-content:space-between}
+.head h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.5rem,3vw,2rem);letter-spacing:.06em;margin-top:.25rem}
+.head .actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.back{font:inherit;font-size:var(--t-sm);color:var(--blue);background:none;border:0;padding:0;cursor:pointer;font-weight:600}
+.grid{display:grid;gap:1.2rem}
+.grid > *{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.25rem 1.35rem;display:grid;gap:.9rem;align-content:start;min-width:0}
+.card h2{font-size:var(--t-md);font-weight:700;letter-spacing:.04em;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.card h2 .muted{font-weight:400;font-size:var(--t-sm)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.2rem;display:grid;gap:.2rem;position:relative;overflow:hidden}
+.kpi span{font-size:var(--t-xs);letter-spacing:.08em;color:var(--ink-2);font-weight:600}
+.kpi b{font-family:var(--font-display);font-weight:600;font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi b small{font-family:var(--font-ui);font-size:.45em;color:var(--ink-2);font-weight:700;margin-left:.2em}
+.kpi em{font-style:normal;font-size:var(--t-xs);color:var(--ink-2)}
+.kpi.feature{background:var(--navy);color:var(--on-navy);border-color:transparent}
+.kpi.feature span,.kpi.feature em,.kpi.feature b small{color:var(--on-navy-2)}
+.kpi.warn b{color:var(--warn-ink)}
+.tablewrap{overflow-x:auto;margin-inline:-1.35rem;padding-inline:1.35rem}
+table.t{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:560px}
+table.t th{font-size:var(--t-xs);letter-spacing:.1em;color:var(--ink-2);font-weight:600;text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:.75rem .6rem;border-bottom:1px solid var(--line);vertical-align:middle}
+table.t tbody tr{transition:background-color .12s}
+table.t tbody tr:hover{background:var(--surface-2)}
+table.t .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t .nowrap{white-space:nowrap}
+.linkish{font:inherit;color:var(--blue);background:none;border:0;padding:0;cursor:pointer;font-weight:700;text-align:left}
+.linkish:hover{text-decoration:underline;text-underline-offset:3px}
+.sub{display:block;font-size:var(--t-xs);color:var(--ink-2);font-weight:400}
+.search{display:flex;gap:.6rem}
+.search .input{max-width:420px}
+.depart{display:grid;gap:0}
+.depart button{font:inherit;color:inherit;background:none;border:0;border-bottom:1px solid var(--line);padding:.8rem 0;display:grid;grid-template-columns:auto 1fr auto;gap:.9rem;align-items:center;text-align:left;cursor:pointer}
+.depart button:last-child{border-bottom:0}
+.depart button:hover .nm{color:var(--blue)}
+.depart .d{width:52px;text-align:center;line-height:1.15;border-radius:10px;background:var(--surface-2);padding:.4rem 0}
+.depart .d b{display:block;font-family:var(--font-display);font-size:1.3rem}
+.depart .d span{font-size:.68rem;color:var(--ink-2)}
+.depart .nm{font-weight:700;font-size:var(--t-sm);transition:color .12s}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.2rem}
+.form-grid .full{grid-column:1 / -1}
+.form-actions{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.hint{font-size:var(--t-sm);padding:.7rem .9rem;border-radius:var(--radius-sm);background:var(--blue-soft)}
+.hint.bad{background:var(--warn-bg);color:var(--warn-ink)}
+.profile{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:1.4rem;align-items:center}
+.bal{display:flex;align-items:baseline;gap:.3rem}
+.bal b{font-family:var(--font-display);font-weight:600;font-size:clamp(2.4rem,4vw,3.2rem);line-height:1}
+.bal span{font-weight:700;color:var(--ink-2)}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:.45rem 1.2rem;margin:0;font-size:var(--t-sm)}
+dl.kv dt{color:var(--ink-2)} dl.kv dd{margin:0;overflow-wrap:anywhere}
+.facts-row{display:flex;flex-wrap:wrap;gap:.5rem 1.6rem;font-size:var(--t-sm);color:var(--ink-2)}
+.facts-row b{color:var(--ink);font-variant-numeric:tabular-nums}
+.chip-proposal{justify-self:start;font-size:var(--t-xs);font-weight:700;padding:.2rem .65rem;border-radius:999px;background:var(--brass-soft);color:var(--brass);text-decoration:none;white-space:nowrap}
+.side .chip-proposal{background:rgba(226,207,169,.14);color:#e2cfa9;align-self:start}
+@media (min-width:960px){.shell .side{grid-template-rows:auto auto 1fr auto auto}}
+.michi-card{border-color:color-mix(in srgb,var(--brass) 45%,var(--line))}
+.michi-card h2 .badge{font-weight:700}
+.inv-stats{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:var(--t-sm);color:var(--ink-2)}
+.inv-stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+.st-requested{background:var(--brass-soft);color:var(--brass)}
+.st-invited{background:var(--blue-soft);color:var(--blue)}
+.st-none{background:var(--surface-2);color:var(--ink-2)}
+.st-booked2{background:color-mix(in srgb,var(--plus) 14%,transparent);color:var(--plus)}
+.danger-zone{border-color:color-mix(in srgb,var(--minus) 35%,var(--line))}
+
+@media (min-width:960px){
+  .shell{grid-template-columns:252px 1fr}
+  .side{height:100vh;align-content:start;grid-template-rows:auto 1fr auto auto;padding:1.6rem 1.1rem;gap:1.6rem}
+  .menu{flex-direction:column;overflow:visible;margin:0;padding:0;gap:.15rem}
+  .menu button{padding:.7rem .85rem}
+  .menu button[aria-current="page"]{box-shadow:inset 2px 0 0 #e2cfa9}
+  .demo{display:grid;gap:.6rem;padding:1rem;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(238,243,251,.1);font-size:var(--t-xs)}
+  .demo .eyebrow{color:#e2cfa9}
+  .demo label{display:grid;gap:.3rem;color:var(--on-navy-2)}
+  .demo input{font:inherit;font-size:var(--t-sm);padding:.4rem .5rem;border-radius:8px;border:1px solid rgba(238,243,251,.2);background:rgba(0,0,0,.2);color:var(--on-navy);color-scheme:dark}
+  .demo button{font:inherit;font-size:var(--t-xs);font-weight:700;padding:.45rem;border-radius:8px;border:1px solid rgba(238,243,251,.2);background:transparent;color:var(--on-navy);cursor:pointer}
+  .demo button:hover{background:rgba(255,255,255,.06)}
+  .demo p{color:var(--on-navy-2);line-height:1.6}
+  .side .links{display:grid;gap:.35rem;font-size:var(--t-xs)}
+  .side .links a{color:var(--on-navy-2);text-decoration:none}
+  .side .links a:hover{color:var(--on-navy)}
+  .mobile-demo{display:none}
+  .work{padding-block:2.2rem 4rem}
+  .two{grid-template-columns:1.6fr 1fr}
+  .two-even{grid-template-columns:1fr 1fr}
+}
+@media (max-width:959px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .profile{grid-template-columns:1fr} }
+@media (max-width:560px){ table.t.members{min-width:0} table.t.members :is(th,td):nth-child(3),table.t.members :is(th,td):nth-child(5){display:none} .form-grid{grid-template-columns:1fr} .search{flex-direction:column} .kpi{padding:.9rem} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="../"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="#e2cfa9" stroke-width="1.2"/><path d="M8 19c3-6 7-9 16-9" fill="none" stroke="#eef3fb" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="19" r="2.2" fill="#e2cfa9"/><circle cx="24" cy="10" r="2.2" fill="#eef3fb"/></svg>
+      <span><b>バスツアー会員</b><small>STAFF CONSOLE</small></span></a>
+    <a class="chip-proposal" href="../" title="招待制「道ツアー」を組み込んだ提案版です">提案版：道ツアー入り</a>
+    <nav class="menu" aria-label="スタッフメニュー" id="menu"></nav>
+    <div class="demo" aria-label="デモの操作">
+      <div class="eyebrow">Demo</div>
+      <label for="demo-date">デモの日付<input type="date" id="demo-date"></label>
+      <button type="button" data-act="reset">サンプルデータに戻す</button>
+      <p>データはこのブラウザの中だけに保存されます。実在の個人情報は入力しないでください。</p>
+    </div>
+    <div class="links"><a href="../">制度のご案内（トップ）</a><a href="../member/">会員アプリ</a><a href="../../admin/">現行版のスタッフ画面</a></div>
+  </aside>
+  <main class="work" id="app"></main>
+</div>
+
+<script src="../../points.js"></script>
+<script src="../michi.js"></script>
+<script>
+"use strict";
+const app = document.getElementById("app");
+const ui = {view:"home", param:null, flash:null, query:"", check:"", confirm:null};
+const OP = "デモ担当";
+const ICON = {
+  home:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>`,
+  tours:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="14" rx="3"/><path d="M3.5 11h17M7.5 17.5V20M16.5 17.5V20"/></svg>`,
+  newMember:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M18 7v6M15 10h6"/></svg>`,
+};
+const MENU = [["home","ダッシュボード"],["tours","ツアー"],["newMember","新規入会"]];
+const WEEK = "日月火水木金土";
+const slash = s => s.replace(/-/g, "/");
+
+function go(view, param = null, flash = null){ Object.assign(ui, {view, param, flash, confirm:null}); render(); window.scrollTo(0,0); }
+const badge = (cls, text) => `<span class="badge ${cls}">${esc(text)}</span>`;
+const rankBadge = r => badge("rank-" + r.code, r.name);
+const memberBtn = m => `<button type="button" class="linkish mono" data-go="member" data-arg="${m.member_no}">${m.member_no}</button>`;
+const head = (eyebrow, title, actions = "", back = "") =>
+  `<div class="head"><div>${back}<div class="eyebrow">${eyebrow}</div><h1>${esc(title)}</h1></div>${actions ? `<div class="actions">${actions}</div>` : ""}</div>`;
+const dateBlock = d => { const [, mo, day] = d.split("-").map(Number); return `<div class="d"><span>${mo}月</span><b>${day}</b><span>${WEEK[parse(d).getUTCDay()]}</span></div>`; };
+
+function cancelBtn(b){
+  if (b.status !== "booked") return "";
+  const key = "cancel-" + b.id;
+  return ui.confirm === key
+    ? `<span class="nowrap"><button type="button" class="btn sm danger" data-act="cancel-booking" data-arg="${b.id}">取消を確定</button> <button type="button" class="btn sm ghost" data-act="confirm" data-arg="">やめる</button></span>`
+    : `<button type="button" class="btn sm ghost" data-act="confirm" data-arg="${key}">取消</button>`;
+}
+
+function ticket(m, rank){
+  return `<div class="ticket" role="img" aria-label="会員証 ${m.member_no}">
+    <div class="t-main"><div><div class="t-brand">バスツアー会員</div><div class="t-label">Member's Pass</div></div>
+      <div class="t-no">${m.member_no}</div>
+      <div><div class="t-name">${esc(m.name)} 様</div><div class="t-label">Since ${m.joined_on.slice(0,4)}.${m.joined_on.slice(5,7)}</div></div></div>
+    <div class="t-stub"><div class="t-label">Class</div><div class="t-class ${rank.code}">${esc(rank.name)}</div><div class="t-mark">×${rank.multiplier}</div></div></div>`;
+}
+
+function historyTable(mid){
+  const rows = db.txns.filter(t => t.member_id === mid).sort((a,b) => b.id - a.id);
+  if (!rows.length) return `<p class="muted small">履歴はまだありません。</p>`;
+  return `<div class="tablewrap"><table class="t"><thead><tr><th>日付</th><th>区分</th><th>内容</th><th>担当</th><th class="r">ポイント</th></tr></thead><tbody>${
+    rows.map(r => {
+      let reason = r.reason;
+      const b = r.booking_id && db.bookings.find(b => b.id === r.booking_id);
+      const tn = b && getTour(b.tour_id).name;
+      if (tn && (r.kind === "earn" || r.kind === "bonus") && !reason.includes(tn)) reason += `／${tn}`;
+      return `<tr><td class="nowrap num">${slash(r.created_on)}</td><td>${badge("plain", KIND[r.kind])}</td><td>${esc(reason)}</td><td class="muted nowrap">${esc(r.operator || "-")}</td><td class="r ${r.points > 0 ? "plus" : "minus"}"><b>${r.points > 0 ? "+" : "−"}${yen(Math.abs(r.points))}</b></td></tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+
+const views = {
+  home(){
+    const soon = addDays(today, 90);
+    const active = db.members.filter(m => m.status === "active");
+    const outstanding = db.lots.filter(l => l.expires_on >= today).reduce((a,l) => a + l.remaining, 0);
+    const expiring = db.lots.filter(l => l.expires_on >= today && l.expires_on <= soon).reduce((a,l) => a + l.remaining, 0);
+    const scheduled = db.tours.filter(t => t.status === "scheduled").sort((a,b) => a.depart_date < b.depart_date ? -1 : 1);
+    const q = ui.query.trim();
+    const list = (q ? db.members.filter(m => [m.member_no,m.name,m.kana,m.phone,m.email].some(v => (v || "").includes(q))) : db.members)
+      .slice().sort((a,b) => b.id - a.id).slice(0, 50);
+    return `${head("Dashboard", "ダッシュボード", `<button type="button" class="btn" data-go="newMember">＋ 新規入会</button>`)}
+    ${flashHtml()}
+    <div class="kpis">
+      <div class="kpi feature"><span>未使用ポイント残高</span><b class="num">${yen(outstanding)}<small>pt</small></b><em>${yen(outstanding)}円相当の値引き予定</em></div>
+      <div class="kpi"><span>有効会員数</span><b class="num">${yen(active.length)}<small>名</small></b><em>退会者を除く</em></div>
+      <div class="kpi ${expiring ? "warn" : ""}"><span>90日以内に失効予定</span><b class="num">${yen(expiring)}<small>pt</small></b><em>${slash(soon)} まで</em></div>
+      <div class="kpi"><span>催行予定ツアー</span><b class="num">${scheduled.length}<small>件</small></b><em>${scheduled[0] ? `次の出発 ${slash(scheduled[0].depart_date)}` : "予定なし"}</em></div>
+    </div>
+    <div class="grid two">
+      <section class="card"><h2>会員 <span class="muted">${q ? `「${esc(q)}」の検索結果 ${list.length}件` : `最近入会した順`}</span></h2>
+        <form data-form="search" class="search" role="search"><input class="input" id="q" name="q" value="${esc(ui.query)}" placeholder="会員番号・氏名・カナ・電話で検索" aria-label="会員を検索"><button class="btn ghost">検索</button></form>
+        <div class="tablewrap"><table class="t members"><thead><tr><th>会員番号</th><th>氏名</th><th>ランク</th><th class="r">残高</th><th>状態</th></tr></thead><tbody>${
+          list.map(m => `<tr><td>${memberBtn(m)}</td><td>${esc(m.name)}<span class="sub">${esc(m.kana)}</span></td><td>${rankBadge(rankFor(m.id, today))}</td><td class="r"><b>${yen(balance(m.id, today))}</b> pt</td><td>${m.status === "active" ? badge("st-booked","有効") : badge("st-cancelled","退会")}</td></tr>`).join("")
+          || `<tr><td colspan="5" class="muted">該当する会員はいません</td></tr>`}</tbody></table></div>
+      </section>
+      <div class="grid" style="gap:1.2rem">
+        ${(() => { const ms = db.tours.filter(t => isMichi(t) && t.status === "scheduled").sort((a,b) => a.depart_date < b.depart_date ? -1 : 1);
+          return ms.length ? `<section class="card michi-card"><h2>道ツアーの招待 ${badge("rank-gold plain","招待制")}</h2><div class="depart">${ms.map(t => { const s = inviteSummary(t);
+            return `<button type="button" data-go="tour" data-arg="${t.id}">${dateBlock(t.depart_date)}<span><span class="nm">${esc(t.name)}</span><span class="sub">対象 ${s.eligible}名・招待 ${s.invited}名・希望 ${s.requested}名・予約 ${s.booked}名</span></span><span class="small muted nowrap">${s.invited ? "" : "未招待"}</span></button>`; }).join("")}</div></section>` : ""; })()}
+        <section class="card"><h2>次の出発</h2><div class="depart">${
+          scheduled.slice(0, 4).map(t => { const n = db.bookings.filter(b => b.tour_id === t.id && b.status === "booked").length;
+            return `<button type="button" data-go="tour" data-arg="${t.id}">${dateBlock(t.depart_date)}<span><span class="nm">${isMichi(t) ? "【道ツアー】" : ""}${esc(t.name)}</span><span class="sub">${yen(t.price)}円${t.bonus_multiplier !== 1 ? `・ポイント×${t.bonus_multiplier}` : ""}${t.bonus_points ? `・+${t.bonus_points}pt` : ""}</span></span><span class="small muted nowrap">${n}名</span></button>`; }).join("")
+          || `<p class="muted small">催行予定のツアーはありません。</p>`}</div></section>
+        <section class="card"><h2>期限切れポイントの失効処理</h2><p class="small muted">残高の表示では期限切れを自動で除いています。台帳に失効の記録を残すため、定期的に実行してください。</p>
+          <div><button type="button" class="btn ghost" data-act="expire">失効処理を実行</button></div></section>
+      </div>
+    </div>`;
+  },
+
+  member(){
+    const m = getMember(ui.param);
+    const rank = rankFor(m.id, today), bal = balance(m.id, today);
+    const next = RULES.RANKS.find(r => r[2] > rank.tours);
+    const sched = expiringSchedule(m.id, today);
+    const ref = m.referrer_id ? memberById(m.referrer_id) : null;
+    const bookings = db.bookings.filter(b => b.member_id === m.id).map(b => ({b, t:getTour(b.tour_id)}))
+      .sort((x,y) => x.t.depart_date < y.t.depart_date ? 1 : -1);
+    const tools = m.status !== "active" ? "" : `<div class="grid two-even">
+      <section class="card"><h2>ポイント調整</h2><form data-form="adjust" class="form-grid">
+        <label class="field"><span>ポイント</span><input class="input num" id="adj-points" name="points" inputmode="numeric" required placeholder="例: 200 / -100"><small>減らすときはマイナス</small></label>
+        <label class="field"><span>理由</span><input class="input" id="adj-reason" name="reason" required placeholder="例: 付与漏れの訂正"><small>履歴に残ります</small></label>
+        <div class="form-actions full"><button class="btn">調整する</button></div></form></section>
+      <section class="card danger-zone"><h2>退会</h2><form data-form="withdraw" style="display:grid;gap:.8rem">
+        <p class="small muted">退会すると保有ポイント ${yen(bal)}pt はすべて失効します。参加予定のツアーがある場合は先に取り消してください。</p>
+        <label class="check"><input type="checkbox" name="confirm" id="wd-confirm"> 保有ポイントが失効することをお客様に説明済み</label>
+        <div><button class="btn danger">退会処理</button></div></form></section></div>`;
+    return `${head("Member", m.name + " 様", "", `<button type="button" class="back" data-go="home">← ダッシュボード</button>`)}
+    ${flashHtml()}
+    <section class="card"><div class="profile">
+      <div>${ticket(m, rank)}</div>
+      <div class="grid" style="gap:1rem">
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">${rankBadge(rank)}${m.status === "active" ? "" : badge("st-cancelled","退会済")}<span class="small muted">直近1年の参加 ${rank.tours}回${next ? `・あと${next[2] - rank.tours}回で${next[1]}` : "・最上位ランク"}</span></div>
+        <div><div class="eyebrow">Balance</div><div class="bal"><b class="num">${yen(bal)}</b><span>pt</span></div></div>
+        <div class="facts-row">${sched.length ? sched.map(([d,p]) => `<span>${slash(d)} まで <b>${yen(p)}pt</b></span>`).join("") : `<span>有効なポイントはありません</span>`}</div>
+      </div></div></section>
+    <div class="grid two">
+      <section class="card"><h2>ツアー</h2>${bookings.length ? `<div class="tablewrap"><table class="t"><thead><tr><th>出発日</th><th>ツアー</th><th class="r">代金</th><th class="r">利用pt</th><th>状態</th><th></th></tr></thead><tbody>${
+        bookings.map(({b,t}) => `<tr><td class="nowrap num">${slash(t.depart_date)}</td><td><button type="button" class="linkish" data-go="tour" data-arg="${t.id}">${esc(t.name)}</button></td><td class="r">${yen(b.price)}</td><td class="r">${yen(b.points_used)}</td><td>${badge("st-"+b.status, BOOKING[b.status])}</td><td class="r">${cancelBtn(b)}</td></tr>`).join("")
+      }</tbody></table></div>` : `<p class="muted small">ツアーの予約・参加はまだありません。</p>`}</section>
+      <section class="card"><h2>登録情報</h2><dl class="kv">
+        <dt>フリガナ</dt><dd>${esc(m.kana) || "-"}</dd><dt>電話</dt><dd>${esc(m.phone) || "-"}</dd><dt>メール</dt><dd>${esc(m.email) || "-"}</dd>
+        <dt>生年月日</dt><dd>${m.birthdate ? slash(m.birthdate) : "-"}</dd><dt>入会日</dt><dd>${slash(m.joined_on)}</dd>
+        ${ref ? `<dt>紹介者</dt><dd>${memberBtn(ref)} ${esc(ref.name)}</dd>` : ""}</dl></section>
+    </div>
+    <section class="card"><h2>ポイント履歴</h2>${historyTable(m.id)}</section>
+    ${tools}`;
+  },
+
+  newMember(){
+    return `${head("New Member", "新規入会")}
+    ${flashHtml()}
+    <section class="card" style="max-width:860px"><form data-form="register" class="form-grid">
+      <label class="field"><span>氏名（必須）</span><input class="input" id="r-name" name="name" required value="高橋 美咲"></label>
+      <label class="field"><span>フリガナ</span><input class="input" id="r-kana" name="kana" value="タカハシ ミサキ"></label>
+      <label class="field"><span>電話番号</span><input class="input" id="r-phone" name="phone" inputmode="tel" value="090-0000-1111"></label>
+      <label class="field"><span>メールアドレス</span><input class="input" id="r-email" name="email" type="email"></label>
+      <label class="field"><span>生年月日</span><input class="input" id="r-birth" name="birthdate" type="date" value="1962-${today.slice(5,7)}-08"><small>誕生月特典に使います</small></label>
+      <label class="field"><span>紹介者の会員番号（任意）</span><input class="input mono" id="r-ref" name="referrer_no" placeholder="${db.members[0] ? db.members[0].member_no : "BT00000018"}"></label>
+      <label class="field"><span>会員アプリの暗証番号（必須）</span><input class="input" id="r-pin" name="pin" inputmode="numeric" required value="1111"><small>4〜8桁の数字。お客様に決めていただきます</small></label>
+      <div class="field"><span>入会特典</span><p class="small muted" style="padding-top:.5rem">登録すると ${RULES.WELCOME_BONUS}pt が付き、会員番号が発行されます。</p></div>
+      <div class="form-actions full"><button class="btn">入会登録</button><span class="small muted">入力欄にはサンプルの値が入っています</span></div>
+    </form></section>`;
+  },
+
+  tours(){
+    const rows = db.tours.slice().sort((a,b) => a.depart_date < b.depart_date ? 1 : -1).map(t => {
+      const n = db.bookings.filter(b => b.tour_id === t.id && b.status !== "cancelled").length;
+      const camp = [t.bonus_multiplier !== 1 ? `ポイント×${t.bonus_multiplier}` : "", t.bonus_points ? `+${t.bonus_points}pt` : ""].filter(Boolean).join("・");
+      const st = t.status === "scheduled" ? "st-booked" : t.status === "completed" ? "st-completed" : "st-cancelled";
+      return `<tr><td class="nowrap num">${slash(t.depart_date)}（${WEEK[parse(t.depart_date).getUTCDay()]}）</td><td><button type="button" class="linkish" data-go="tour" data-arg="${t.id}">${esc(t.name)}</button><span class="sub mono">${esc(t.code)}</span></td><td>${isMichi(t) ? kindBadge(t) : `<span class="muted small">通常</span>`}</td><td class="r">${yen(t.price)}円</td><td>${camp ? badge("rank-gold plain", camp) : `<span class="muted">-</span>`}</td><td class="r">${n}名</td><td>${badge(st, TOUR[t.status])}</td></tr>`;
+    }).join("");
+    return `${head("Tours", "ツアー")}
+    ${flashHtml()}
+    <section class="card"><div class="tablewrap"><table class="t"><thead><tr><th>出発日</th><th>ツアー</th><th>種類</th><th class="r">代金</th><th>キャンペーン・特典</th><th class="r">人数</th><th>状態</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+    <section class="card"><h2>ツアーを登録する</h2><form data-form="tour" class="form-grid">
+      <label class="field"><span>種類</span><select class="input" id="t-kind" name="kind"><option value="normal">通常ツアー</option><option value="michi">道ツアー（招待制）</option></select><small>道ツアーは招待された会員だけが予約できます</small></label>
+      <label class="field"><span>招待条件（道ツアーのみ）</span><input class="input num" id="t-min" name="invite_min_tours" value="${MICHI.DEFAULT_MIN_TOURS}" inputmode="numeric"><small>直近1年の通常ツアー参加回数がこの回数以上の会員を招待（仮 ${MICHI.DEFAULT_MIN_TOURS}回）</small></label>
+      <label class="field"><span>ツアーコード</span><input class="input mono" id="t-code" name="code" required value="2026-${String(db.seq.tour+1).padStart(2,"0")}-NEW"></label>
+      <label class="field"><span>ツアー名</span><input class="input" id="t-name" name="name" required value="ぶどう狩りと甲府ワイナリー見学"></label>
+      <label class="field"><span>出発日</span><input class="input" id="t-date" name="depart_date" type="date" required value="${addDays(today, 25)}"></label>
+      <label class="field"><span>代金（税込・1名）</span><input class="input num" id="t-price" name="price" inputmode="numeric" required value="10800"></label>
+      <label class="field"><span>キャンペーン倍率</span><input class="input num" id="t-mult" name="bonus_multiplier" value="1"><small>通常は 1。2 にするとポイント2倍</small></label>
+      <label class="field"><span>キャンペーン加算ポイント</span><input class="input num" id="t-bonus" name="bonus_points" value="0" inputmode="numeric"><small>通常は 0。道ツアーで 0 のままなら特典 ${yen(MICHI.DEFAULT_BONUS)}pt（仮）</small></label>
+      <div class="form-actions full"><button class="btn">登録する</button></div></form></section>`;
+  },
+
+  tour(){
+    const t = getTour(ui.param), open = t.status === "scheduled";
+    const bookings = db.bookings.filter(b => b.tour_id === t.id);
+    const rows = bookings.map(b => {
+      const m = memberById(b.member_id);
+      let est = `<span class="muted">-</span>`;
+      if (b.status === "booked"){ const e = estimateEarn(m, t, b.price - b.points_used); est = `<b class="plus">+${yen(e.items.reduce((a,[,p]) => a + p, 0))}</b> <span class="sub" style="display:inline">${e.rank.name}</span>`; }
+      return `<tr><td>${memberBtn(m)}</td><td>${esc(m.name)}</td><td class="r">${yen(b.points_used)}</td><td class="r">${yen(b.price - b.points_used)}円</td><td class="r nowrap">${est}</td><td>${badge("st-"+b.status, BOOKING[b.status])}</td><td class="r">${open ? cancelBtn(b) : ""}</td></tr>`;
+    }).join("");
+    const camp = [t.bonus_multiplier !== 1 ? `ポイント×${t.bonus_multiplier}` : "", t.bonus_points && !isMichi(t) ? `+${t.bonus_points}pt` : ""].filter(Boolean).join("・");
+    let hint = "", checked = null;
+    if (ui.check){
+      try { checked = getMember(ui.check);
+        if (isMichi(t) && !inviteFor(t.id, checked.id)){ hint = `<div class="hint bad">${esc(checked.name)} 様はこの道ツアーに招待されていません。招待された会員だけが予約できます。</div>`; checked = null; }
+        else hint = `<div class="hint"><b>${esc(checked.name)} 様</b>　残高 <b>${yen(balance(checked.id, today))}pt</b> ／ このツアーで使えるのは最大 <b>${yen(maxRedeemable(checked.id, t.price, today))}pt</b></div>`;
+      } catch (e) { hint = `<div class="hint bad">${esc(e.message)}</div>`; }
+    }
+    const booked = bookings.filter(b => b.status === "booked");
+    const sample = db.members.find(m => m.status === "active" && !bookings.some(b => b.member_id === m.id && b.status !== "cancelled"));
+    const st = t.status === "scheduled" ? "st-booked" : t.status === "completed" ? "st-completed" : "st-cancelled";
+    return `${head("Tour", t.name, "", `<button type="button" class="back" data-go="tours">← ツアー一覧</button>`)}
+    ${flashHtml()}
+    <section class="card"><div class="facts-row" style="font-size:var(--t-md)">
+      <span>${badge(st, TOUR[t.status])} ${kindBadge(t)}</span>${isMichi(t) ? `<span>招待条件 <b>直近1年で通常ツアー ${t.invite_min_tours}回以上</b></span><span>道ツアー特典 <b>+${yen(t.bonus_points)}pt</b></span>` : ""}<span>出発日 <b>${slash(t.depart_date)}（${WEEK[parse(t.depart_date).getUTCDay()]}）</b></span><span>代金 <b>${yen(t.price)}円</b></span><span>コード <b class="mono">${esc(t.code)}</b></span>${camp ? `<span>キャンペーン <b>${camp}</b></span>` : ""}
+    </div></section>
+    ${isMichi(t) ? inviteSection(t, open) : ""}
+    <section class="card"><h2>予約者 <span class="muted">${bookings.filter(b => b.status !== "cancelled").length}名</span></h2>${rows ? `<div class="tablewrap"><table class="t"><thead><tr><th>会員番号</th><th>氏名</th><th class="r">利用pt</th><th class="r">支払額</th><th class="r">付与予定</th><th>状態</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="muted small">予約はまだありません。</p>`}</section>
+    ${open ? `
+    <div class="grid two-even">
+      <section class="card"><h2>予約を登録する</h2>
+        <form data-form="check" class="search"><input class="input mono" id="chk" name="member_no" value="${esc(ui.check)}" placeholder="会員番号（例: ${sample ? sample.member_no : "BT00000018"}）" aria-label="会員番号"><button class="btn ghost">残高を確認</button></form>
+        ${hint}
+        <form data-form="book" class="search"><input class="input num" id="bk-pts" name="points" value="0" inputmode="numeric" aria-label="利用ポイント" ${checked ? "" : "disabled"}><button class="btn" ${checked ? "" : "disabled"}>予約を登録</button></form>
+        <p class="small muted">${checked ? `使うポイントを ${RULES.REDEEM_UNIT}pt 単位で入力してください（使わない場合は 0）。` : "先に会員番号を入れて「残高を確認」を押してください。"}</p>
+      </section>
+      <section class="card"><h2>催行完了・ポイント付与</h2><form data-form="complete" style="display:grid;gap:.6rem">
+        ${booked.map(b => `<label class="check"><input type="checkbox" name="absent" value="${b.id}"> ${esc(memberById(b.member_id).name)} 様は当日不参加</label>`).join("") || `<p class="muted small">参加予定の方はいません。</p>`}
+        <div><button class="btn" ${t.depart_date > today ? "disabled" : ""}>催行完了として付与</button></div></form>
+        <p class="small muted">${t.depart_date > today ? `出発日（${slash(t.depart_date)}）以降に実行できます。サイドバーの「デモの日付」を出発日以降にすると試せます。` : "不参加の方には付与されず、使ったポイントも戻りません。"}</p></section>
+    </div>
+    <section class="card danger-zone"><h2>催行中止</h2><form data-form="cancel-tour" style="display:grid;gap:.8rem">
+      <label class="check"><input type="checkbox" name="confirm" id="ct-confirm"> 全員の予約を取り消し、使ったポイントをお戻しする</label>
+      <div><button class="btn danger">ツアーを中止する</button></div></form></section>` : ""}`;
+  },
+};
+
+const kindBadge = t => isMichi(t) ? badge("rank-gold plain", "道ツアー") : "";
+const INV_CLS = {none:"st-none", invited:"st-invited", requested:"st-requested", booked:"st-booked2"};
+function inviteSummary(t){
+  const inv = invitesOf(t.id), states = inv.map(inviteState);
+  return {eligible: eligibleFor(t, today).length, invited: inv.length,
+          requested: states.filter(x => x.code === "requested").length, booked: states.filter(x => x.code === "booked").length};
+}
+function inviteSection(t, open){
+  const elig = eligibleFor(t, today);
+  const ids = new Set([...elig.map(x => x.m.id), ...invitesOf(t.id).map(i => i.member_id)]);
+  const rows = [...ids].map(id => memberById(id)).map(m => {
+    const inv = inviteFor(t.id, m.id), s = inviteState(inv), n = normalToursIn(m.id, today);
+    const ops = !open || !inv || s.code === "booked" ? "" :
+      `<span class="nowrap">${["phone","mail"].filter(c => !inv.contacts.some(x => x.channel === c)).map(c => `<button type="button" class="btn sm ghost" data-act="contact" data-arg="${inv.id}:${c}">${CONTACT[c]}で案内済</button>`).join(" ")}
+       <button type="button" class="btn sm" data-act="prefill" data-arg="${m.member_no}">予約へ</button></span>`;
+    return `<tr><td>${memberBtn(m)}</td><td>${esc(m.name)}<span class="sub">${esc(m.phone)}</span></td><td class="r">${n}回</td><td>${badge(INV_CLS[s.code], s.label)}</td><td class="r">${ops}</td></tr>`;
+  }).join("");
+  const s = inviteSummary(t), waiting = elig.filter(x => !inviteFor(t.id, x.m.id)).length;
+  return `<section class="card michi-card"><h2>招待 ${badge("rank-gold plain","招待制")}</h2>
+    <div class="inv-stats"><span>条件を満たす会員 <b>${s.eligible}名</b></span><span>招待済 <b>${s.invited}名</b></span><span>参加希望 <b>${s.requested}名</b></span><span>予約 <b>${s.booked}名</b></span></div>
+    ${rows ? `<div class="tablewrap"><table class="t"><thead><tr><th>会員番号</th><th>氏名・電話</th><th class="r">通常ツアー参加（直近1年）</th><th>招待の状態</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="muted small">今のところ条件を満たす会員はいません。</p>`}
+    ${open ? `<div class="form-actions"><button type="button" class="btn" data-act="invite" ${waiting ? "" : "disabled"}>${waiting ? `条件を満たす ${waiting}名に招待を送る` : "招待を送る対象はいません"}</button><span class="small muted">招待は会員アプリに表示されます。アプリを使わない方には、電話・郵送でご案内して記録してください。</span></div>` : ""}
+  </section>`;
+}
+const flashHtml = () => ui.flash ? `<div class="toast ${ui.flash[0]}" role="status">${esc(ui.flash[1])}</div>` : "";
+
+function render(){
+  const cur = ui.view === "member" ? "home" : ui.view === "tour" ? "tours" : ui.view;
+  document.getElementById("menu").innerHTML = MENU.map(([v,l]) => `<button type="button" data-go="${v}" ${cur === v ? 'aria-current="page"' : ""}>${ICON[v]}${l}</button>`).join("");
+  document.getElementById("demo-date").value = today;
+  let html = `<div class="mobile-demo"><b>デモ</b><label>日付 <input type="date" id="demo-date-m" value="${today}"></label><button type="button" class="btn sm ghost" data-act="reset">初期化</button></div>`;
+  try { html += views[ui.view](); }
+  catch (e) { if (!(e instanceof PointError)) throw e; html += `<div class="toast err">${esc(e.message)}</div>`; }
+  app.innerHTML = html;
+  ui.flash = null;
+}
+
+function run(fn){
+  try { fn(); }
+  catch (e) { if (!(e instanceof PointError)) throw e; ui.flash = ["err", e.message]; ui.confirm = null; render(); }
+}
+const num = v => { const s = String(v ?? "").replace(/[,，\s]/g, ""); return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : NaN; };
+function setDate(v){
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+  today = v; save(); ui.flash = ["ok", `デモの日付を ${slash(today)} にしました`]; render();
+}
+
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]");
+  if (g){ if (g.dataset.go === "tour") ui.check = ""; return go(g.dataset.go, g.dataset.go === "tour" ? Number(g.dataset.arg) : g.dataset.arg || null); }
+  const a = e.target.closest("[data-act]");
+  if (!a) return;
+  const act = a.dataset.act, arg = a.dataset.arg;
+  run(() => {
+    if (act === "confirm"){ ui.confirm = arg || null; render(); }
+    else if (act === "cancel-booking"){ cancelBooking(Number(arg), today, OP); ui.confirm = null; ui.flash = ["ok","予約を取り消し、使ったポイントをお戻ししました"]; render(); }
+    else if (act === "invite"){ const n = sendInvites(ui.param, today, OP); ui.flash = ["ok", `${n}名に招待を送りました（会員アプリに表示されます）`]; render(); }
+    else if (act === "contact"){ const [id, ch] = arg.split(":"); markContacted(Number(id), ch, today); ui.flash = ["ok", `${CONTACT[ch]}で案内したことを記録しました`]; render(); }
+    else if (act === "prefill"){ ui.check = arg; render(); document.getElementById("bk-pts")?.focus(); }
+    else if (act === "expire"){ const n = expirePoints(today); go("home", null, ["ok", `失効処理を実行しました（${yen(n)}pt 失効）`]); }
+    else if (act === "reset"){ today = localToday(); seed(today); save(); ui.query = ""; ui.check = ""; go("home", null, ["ok","サンプルデータに戻しました"]); }
+  });
+});
+
+document.addEventListener("change", e => {
+  if (e.target.id === "demo-date" || e.target.id === "demo-date-m") setDate(e.target.value);
+});
+
+document.addEventListener("submit", e => {
+  const f = e.target.closest("form[data-form]");
+  if (!f) return;
+  e.preventDefault();
+  const fd = new FormData(f), v = Object.fromEntries(fd);
+  run(() => {
+    switch (f.dataset.form){
+      case "search": ui.query = v.q || ""; render(); break;
+      case "register": { const m = registerMember(v, today, OP); go("member", m.member_no, ["ok", `入会登録しました。会員番号は ${m.member_no} です`]); break; }
+      case "adjust": { const p = num(v.points); adjustPoints(ui.param, p, v.reason, today, OP); go("member", ui.param, ["ok", `${p > 0 ? "+" : ""}${yen(p)}pt 調整しました`]); break; }
+      case "withdraw": if (!v.confirm) throw new PointError("確認のチェックを入れてください"); withdrawMember(ui.param, today, OP); go("member", ui.param, ["ok","退会処理を行いました"]); break;
+      case "tour": { const bonus = num(v.bonus_points || 0), michi = v.kind === "michi";
+        const t = createTourEx({...v, price:num(v.price), bonus_multiplier:num(v.bonus_multiplier || 1), bonus_points: michi && !bonus ? undefined : bonus, invite_min_tours: michi ? num(v.invite_min_tours) : undefined}); ui.check = ""; go("tour", t.id, ["ok","ツアーを登録しました"]); break; }
+      case "check": ui.check = (v.member_no || "").trim(); render(); break;
+      case "book": { const p = num(v.points || 0); bookTourEx(ui.check, ui.param, p, today, OP); ui.check = ""; go("tour", ui.param, ["ok","予約を登録しました"]); break; }
+      case "complete": { const n = completeTour(ui.param, today, OP, fd.getAll("absent").map(Number)); go("tour", ui.param, ["ok", `催行完了として ${yen(n)}pt を付与しました`]); break; }
+      case "cancel-tour": if (!v.confirm) throw new PointError("確認のチェックを入れてください"); cancelTour(ui.param, today, OP); go("tour", ui.param, ["ok","ツアーを中止し、使ったポイントをお戻ししました"]); break;
+    }
+  });
+});
+
+// 会員アプリ（別タブ・スマホ表示の枠）での変更を反映する
+window.addEventListener("storage", e => { if (e.key === MICHI_KEY){ bootData(); render(); } });
+
+bootData();
+render();
+</script>
+<script src="../../assets/viewswitch.js"></script>
+</body>
+</html>

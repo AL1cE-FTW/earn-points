@@ -12,6 +12,17 @@ LINE などの外部サービスには頼らず、自社の中だけで運用で
 | 会員アプリ | https://al1ce-ftw.github.io/earn-points/member/ | 旅行客（スマートフォン・PC） |
 | スタッフ画面 | https://al1ce-ftw.github.io/earn-points/admin/ | 窓口スタッフ（PC） |
 
+**提案版（招待制「道ツアー」入り）**：[`docs/提案.md`](docs/提案.md) の段階1（LINE なし）を組み込んだ版です。現行版とは別のリンクで、データも別々に保存されます。
+
+| 画面 | URL |
+|---|---|
+| 制度のご案内 | https://al1ce-ftw.github.io/earn-points/michi/ |
+| 会員アプリ | https://al1ce-ftw.github.io/earn-points/michi/member/ |
+| スタッフ画面 | https://al1ce-ftw.github.io/earn-points/michi/admin/ |
+
+- 招待条件（直近1年で通常ツアー3回以上）・特典（+1,000pt）・招待者のみ予約可、はいずれも**仮**の値です。
+- サンプル会員のうち、佐藤 一郎様と田中 和子様が招待の対象です。山田 花子様でログインすると「招待まであと何回」が表示されます。
+
 - サンプルの会員とツアーが入っています。会員アプリのログイン画面にある「デモ用のサンプル会員」を押すと、会員番号と暗証番号が入ります。
 - PC で見ているときは、画面右下の「PC表示／スマホ表示」でスマホの画面に切り替えられます。枠の中もそのまま操作できます。
 - スタッフ画面の「デモの日付」を変えると、ツアーの催行完了やポイントの失効を試せます。
@@ -37,6 +48,7 @@ site/                    画面デモ（GitHub Pages で公開）
   points.js              制度の計算ロジック（ブラウザ版）
   assets/ui.css          共通デザイン（色・書体・部品）
   assets/viewswitch.js   PC での「PC表示／スマホ表示」切り替え
+  michi/                 提案版（招待制「道ツアー」入り）。3画面のコピーと追加ロジック michi.js
 points/                  サーバ版（Python 標準ライブラリ + SQLite）
   rules.py               制度の数値（付与率・ランク・有効期限など）
   service.py             入会・付与・利用・取消・失効・退会の処理
