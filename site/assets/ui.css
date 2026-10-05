@@ -132,7 +132,7 @@ img,svg{max-width:100%}
 .ticket .t-brand{font-family:var(--font-display);font-size:max(11px,3.6cqw);letter-spacing:.12em;color:#e9d7b5}
 .ticket .t-no{font-family:var(--font-mono);font-size:max(16px,7.4cqw);letter-spacing:.14em;font-weight:600;white-space:nowrap}
 .ticket .t-name{font-size:max(12px,4.4cqw);font-weight:700;letter-spacing:.06em}
-.ticket .t-class{font-family:var(--font-display);font-size:max(12px,4.6cqw);letter-spacing:.08em}
+.ticket .t-class{font-family:var(--font-display);font-size:max(11px,4.2cqw);letter-spacing:.04em;white-space:nowrap}
 .ticket .t-class.gold{color:#e9cf9c}
 .ticket .t-class.silver{color:#dfe7f3}
 .ticket .t-class.regular{color:#bcd3ff}
