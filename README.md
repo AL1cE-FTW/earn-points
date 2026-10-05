@@ -45,6 +45,7 @@ points/                  サーバ版（Python 標準ライブラリ + SQLite）
   __main__.py            コマンド（serve / expire / passwd / demo）
 tests/                   サーバ版のテスト
 docs/ポイント規約.md      会員規約のひな形と法令面の確認メモ
+docs/提案.md             LINE 連携と招待制「道ツアー」の提案（検討中）
 .github/workflows/pages.yml  site/ を GitHub Pages へ公開する設定
 ```
 
