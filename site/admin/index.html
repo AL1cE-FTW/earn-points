@@ -3,119 +3,102 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b2140">
+<meta name="theme-color" content="#1f6a4b">
 <title>スタッフ画面｜バスツアー会員ポイント</title>
 <link rel="stylesheet" href="../assets/ui.css">
 <style>
-/* Layout: PC は左に紺のサイドバー（メニューとデモ操作）、右に作業領域。スマホは上部バー＋横スクロールのメニュー */
-.shell{min-height:100vh;display:grid;grid-template-columns:1fr}
-.side{background:var(--navy);color:var(--on-navy);padding:calc(.8rem + env(safe-area-inset-top,0px)) 16px .8rem;display:grid;gap:.8rem;position:sticky;top:0;z-index:20}
-.brand{display:flex;align-items:center;gap:.6rem;color:var(--on-navy);text-decoration:none}
-.brand svg{width:28px;height:28px;flex:none}
-.brand b{font-family:var(--font-display);font-weight:600;letter-spacing:.12em;font-size:1rem;display:block;line-height:1.2}
-.brand small{display:block;font-size:.6rem;letter-spacing:.3em;color:#e2cfa9}
-.menu{display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding-inline:4px}
-.menu button{font:inherit;font-size:var(--t-sm);font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border-radius:10px;border:0;background:transparent;color:var(--on-navy-2);cursor:pointer;white-space:nowrap}
-.menu button:hover{color:var(--on-navy);background:rgba(255,255,255,.06)}
-.menu button[aria-current="page"]{color:var(--on-navy);background:rgba(255,255,255,.1)}
+/* Layout: 上に緑の帯（システム名とデモ操作）、PC は左に白いメニュー、右に作業領域。スマホはメニューを横並び */
+.topbar{background:var(--bar);color:var(--on-bar);display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;padding:.5rem 16px;padding-top:calc(.5rem + env(safe-area-inset-top,0px));position:sticky;top:0;z-index:20}
+.topbar .brand{color:inherit;text-decoration:none;font-weight:700;margin-right:auto}
+.topbar .brand small{font-weight:400;margin-left:.5rem;opacity:.85}
+.demo{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .6rem;font-size:var(--t-xs)}
+.demo b{background:var(--warn-bg);color:var(--warn-ink);padding:0 .4rem;border-radius:var(--radius-sm)}
+.demo input{font:inherit;font-size:var(--t-xs);padding:.15rem .3rem;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink)}
+.demo button{font:inherit;font-size:var(--t-xs);padding:.15rem .5rem;border:1px solid rgba(255,255,255,.7);border-radius:var(--radius-sm);background:transparent;color:inherit;cursor:pointer}
+.shell{display:grid;grid-template-columns:1fr;min-height:calc(100vh - 44px)}
+.side{background:var(--surface);border-bottom:1px solid var(--line)}
+.menu{display:flex;overflow-x:auto;scrollbar-width:none}
+.menu button{font:inherit;font-size:var(--t-sm);font-weight:700;display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border:0;border-right:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
+.menu button:hover{background:var(--surface-2)}
+.menu button[aria-current="page"]{background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 -3px 0 var(--brand)}
 .menu svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
-.demo{display:none}
 .side .links{display:none}
-.work{min-width:0;padding-inline:clamp(16px,3vw,44px);padding-block:1.4rem 5rem;display:grid;gap:1.2rem;align-content:start;max-width:1240px;width:100%}
-.mobile-demo{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:var(--t-xs);color:var(--warn-ink);background:var(--warn-bg);padding:.55rem .8rem;border-radius:var(--radius-sm)}
-.mobile-demo input{font:inherit;padding:.2rem .4rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
-.head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem;justify-content:space-between}
-.head h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.5rem,3vw,2rem);letter-spacing:.06em;margin-top:.25rem}
+.work{min-width:0;padding:1rem 16px 4rem;display:grid;gap:1rem;align-content:start;max-width:1200px;width:100%}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.6rem 1rem;justify-content:space-between;border-bottom:2px solid var(--brand);padding-bottom:.4rem}
+.head h1{font-size:var(--t-xl)}
 .head .actions{display:flex;gap:.5rem;flex-wrap:wrap}
-.back{font:inherit;font-size:var(--t-sm);color:var(--blue);background:none;border:0;padding:0;cursor:pointer;font-weight:600}
-.grid{display:grid;gap:1.2rem}
+.back{font:inherit;font-size:var(--t-sm);color:var(--link);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.grid{display:grid;gap:1rem}
 .grid > *{min-width:0}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.25rem 1.35rem;display:grid;gap:.9rem;align-content:start;min-width:0}
-.card h2{font-size:var(--t-md);font-weight:700;letter-spacing:.04em;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;display:grid;gap:.8rem;align-content:start;min-width:0}
+.card h2{font-size:var(--t-md);display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;border-left:4px solid var(--brand);padding-left:.55rem;line-height:1.3}
 .card h2 .muted{font-weight:400;font-size:var(--t-sm)}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.2rem;display:grid;gap:.2rem;position:relative;overflow:hidden}
-.kpi span{font-size:var(--t-xs);letter-spacing:.08em;color:var(--ink-2);font-weight:600}
-.kpi b{font-family:var(--font-display);font-weight:600;font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1.2;font-variant-numeric:tabular-nums}
-.kpi b small{font-family:var(--font-ui);font-size:.45em;color:var(--ink-2);font-weight:700;margin-left:.2em}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);background:var(--surface);border-radius:var(--radius)}
+.kpi{padding:.7rem 1rem;display:grid;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0}
+.kpi span{font-size:var(--t-xs);color:var(--ink-2);font-weight:700}
+.kpi b{font-size:1.5rem;line-height:1.3;font-variant-numeric:tabular-nums}
+.kpi b small{font-size:.55em;margin-left:.15em}
 .kpi em{font-style:normal;font-size:var(--t-xs);color:var(--ink-2)}
-.kpi.feature{background:var(--navy);color:var(--on-navy);border-color:transparent}
-.kpi.feature span,.kpi.feature em,.kpi.feature b small{color:var(--on-navy-2)}
-.kpi.warn b{color:var(--warn-ink)}
-.tablewrap{overflow-x:auto;margin-inline:-1.35rem;padding-inline:1.35rem}
+.kpi.warn b{color:var(--minus)}
+.tablewrap{overflow-x:auto}
 table.t{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:560px}
-table.t th{font-size:var(--t-xs);letter-spacing:.1em;color:var(--ink-2);font-weight:600;text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--line);white-space:nowrap}
-table.t td{padding:.75rem .6rem;border-bottom:1px solid var(--line);vertical-align:middle}
-table.t tbody tr{transition:background-color .12s}
+table.t th{font-size:var(--t-xs);color:var(--ink-2);text-align:left;padding:.45rem .6rem;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
+table.t td{padding:.5rem .6rem;border:1px solid var(--line);vertical-align:middle}
 table.t tbody tr:hover{background:var(--surface-2)}
 table.t .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 table.t .nowrap{white-space:nowrap}
-.linkish{font:inherit;color:var(--blue);background:none;border:0;padding:0;cursor:pointer;font-weight:700;text-align:left}
-.linkish:hover{text-decoration:underline;text-underline-offset:3px}
+.linkish{font:inherit;color:var(--link);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-align:left}
 .sub{display:block;font-size:var(--t-xs);color:var(--ink-2);font-weight:400}
-.search{display:flex;gap:.6rem}
+.search{display:flex;gap:.5rem}
 .search .input{max-width:420px}
-.depart{display:grid;gap:0}
-.depart button{font:inherit;color:inherit;background:none;border:0;border-bottom:1px solid var(--line);padding:.8rem 0;display:grid;grid-template-columns:auto 1fr auto;gap:.9rem;align-items:center;text-align:left;cursor:pointer}
+.depart{display:grid}
+.depart button{font:inherit;color:inherit;background:none;border:0;border-bottom:1px solid var(--line);padding:.55rem 0;display:grid;grid-template-columns:7.5em 1fr auto;gap:.6rem;align-items:baseline;text-align:left;cursor:pointer}
 .depart button:last-child{border-bottom:0}
-.depart button:hover .nm{color:var(--blue)}
-.depart .d{width:52px;text-align:center;line-height:1.15;border-radius:10px;background:var(--surface-2);padding:.4rem 0}
-.depart .d b{display:block;font-family:var(--font-display);font-size:1.3rem}
-.depart .d span{font-size:.68rem;color:var(--ink-2)}
-.depart .nm{font-weight:700;font-size:var(--t-sm);transition:color .12s}
-.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.2rem}
+.depart button:hover .nm{text-decoration:underline}
+.depart .d{font-size:var(--t-sm);font-weight:700;font-variant-numeric:tabular-nums}
+.depart .nm{font-weight:700;font-size:var(--t-sm);color:var(--link)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem 1.2rem}
 .form-grid .full{grid-column:1 / -1}
 .form-actions{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
-.hint{font-size:var(--t-sm);padding:.7rem .9rem;border-radius:var(--radius-sm);background:var(--blue-soft)}
-.hint.bad{background:var(--warn-bg);color:var(--warn-ink)}
-.profile{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:1.4rem;align-items:center}
+.hint{font-size:var(--t-sm);padding:.55rem .8rem;border-radius:var(--radius-sm);background:var(--brand-soft);border:1px solid var(--brand)}
+.hint.bad{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.profile{display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:1.4rem;align-items:start}
 .bal{display:flex;align-items:baseline;gap:.3rem}
-.bal b{font-family:var(--font-display);font-weight:600;font-size:clamp(2.4rem,4vw,3.2rem);line-height:1}
-.bal span{font-weight:700;color:var(--ink-2)}
-dl.kv{display:grid;grid-template-columns:auto 1fr;gap:.45rem 1.2rem;margin:0;font-size:var(--t-sm)}
+.bal b{font-size:2.2rem;line-height:1.2;color:var(--accent)}
+.bal span{font-weight:700}
+.lbl{font-size:var(--t-xs);color:var(--ink-2);font-weight:700}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:.4rem 1.2rem;margin:0;font-size:var(--t-sm)}
 dl.kv dt{color:var(--ink-2)} dl.kv dd{margin:0;overflow-wrap:anywhere}
-.facts-row{display:flex;flex-wrap:wrap;gap:.5rem 1.6rem;font-size:var(--t-sm);color:var(--ink-2)}
+.facts-row{display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;font-size:var(--t-sm);color:var(--ink-2)}
 .facts-row b{color:var(--ink);font-variant-numeric:tabular-nums}
-.danger-zone{border-color:color-mix(in srgb,var(--minus) 35%,var(--line))}
+.danger-zone{border-color:var(--minus)}
+.danger-zone h2{border-left-color:var(--minus)}
 
 @media (min-width:960px){
-  .shell{grid-template-columns:252px 1fr}
-  .side{height:100vh;align-content:start;grid-template-rows:auto 1fr auto auto;padding:1.6rem 1.1rem;gap:1.6rem}
-  .menu{flex-direction:column;overflow:visible;margin:0;padding:0;gap:.15rem}
-  .menu button{padding:.7rem .85rem}
-  .menu button[aria-current="page"]{box-shadow:inset 2px 0 0 #e2cfa9}
-  .demo{display:grid;gap:.6rem;padding:1rem;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(238,243,251,.1);font-size:var(--t-xs)}
-  .demo .eyebrow{color:#e2cfa9}
-  .demo label{display:grid;gap:.3rem;color:var(--on-navy-2)}
-  .demo input{font:inherit;font-size:var(--t-sm);padding:.4rem .5rem;border-radius:8px;border:1px solid rgba(238,243,251,.2);background:rgba(0,0,0,.2);color:var(--on-navy);color-scheme:dark}
-  .demo button{font:inherit;font-size:var(--t-xs);font-weight:700;padding:.45rem;border-radius:8px;border:1px solid rgba(238,243,251,.2);background:transparent;color:var(--on-navy);cursor:pointer}
-  .demo button:hover{background:rgba(255,255,255,.06)}
-  .demo p{color:var(--on-navy-2);line-height:1.6}
-  .side .links{display:grid;gap:.35rem;font-size:var(--t-xs)}
-  .side .links a{color:var(--on-navy-2);text-decoration:none}
-  .side .links a:hover{color:var(--on-navy)}
-  .mobile-demo{display:none}
-  .work{padding-block:2.2rem 4rem}
+  .shell{grid-template-columns:220px 1fr}
+  .side{border-bottom:0;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between}
+  .menu{flex-direction:column;overflow:visible}
+  .menu button{border-right:0;border-bottom:1px solid var(--line);padding:.75rem 1rem}
+  .menu button[aria-current="page"]{box-shadow:inset 4px 0 0 var(--brand)}
+  .side .links{display:grid;gap:.25rem;font-size:var(--t-xs);padding:1rem}
+  .work{padding:1.25rem 24px 4rem}
   .two{grid-template-columns:1.6fr 1fr}
   .two-even{grid-template-columns:1fr 1fr}
 }
-@media (max-width:959px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .profile{grid-template-columns:1fr} }
-@media (max-width:560px){ table.t.members{min-width:0} table.t.members :is(th,td):nth-child(3),table.t.members :is(th,td):nth-child(5){display:none} .form-grid{grid-template-columns:1fr} .search{flex-direction:column} .kpi{padding:.9rem} }
+@media (max-width:959px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .kpi:nth-child(3){border-left:0} .kpi:nth-child(n+3){border-top:1px solid var(--line)} .profile{grid-template-columns:1fr} }
+@media (max-width:560px){ table.t.members{min-width:0} table.t.members :is(th,td):nth-child(3),table.t.members :is(th,td):nth-child(5){display:none} .form-grid{grid-template-columns:1fr} .search{flex-direction:column} }
 </style>
 </head>
 <body>
+<header class="topbar">
+  <a class="brand" href="../">バスツアー会員<small>スタッフ画面</small></a>
+  <div class="demo" aria-label="デモの操作"><b>デモ</b><label>日付 <input type="date" id="demo-date"></label><button type="button" data-act="reset">サンプルデータに戻す</button></div>
+</header>
 <div class="shell">
   <aside class="side">
-    <a class="brand" href="../"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="#e2cfa9" stroke-width="1.2"/><path d="M8 19c3-6 7-9 16-9" fill="none" stroke="#eef3fb" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="19" r="2.2" fill="#e2cfa9"/><circle cx="24" cy="10" r="2.2" fill="#eef3fb"/></svg>
-      <span><b>バスツアー会員</b><small>STAFF CONSOLE</small></span></a>
     <nav class="menu" aria-label="スタッフメニュー" id="menu"></nav>
-    <div class="demo" aria-label="デモの操作">
-      <div class="eyebrow">Demo</div>
-      <label for="demo-date">デモの日付<input type="date" id="demo-date"></label>
-      <button type="button" data-act="reset">サンプルデータに戻す</button>
-      <p>データはこのブラウザの中だけに保存されます。実在の個人情報は入力しないでください。</p>
-    </div>
-    <div class="links"><a href="../">制度のご案内（トップ）</a><a href="../member/">会員アプリ</a></div>
+    <div class="links"><a href="../">制度のご案内（トップ）</a><a href="../member/">会員ページ</a><span class="muted">データはこのブラウザの中だけに保存されます。実在の個人情報は入力しないでください。</span></div>
   </aside>
   <main class="work" id="app"></main>
 </div>
@@ -131,7 +114,7 @@ const ICON = {
   tours:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="14" rx="3"/><path d="M3.5 11h17M7.5 17.5V20M16.5 17.5V20"/></svg>`,
   newMember:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M18 7v6M15 10h6"/></svg>`,
 };
-const MENU = [["home","ダッシュボード"],["tours","ツアー"],["newMember","新規入会"]];
+const MENU = [["home","ホーム"],["tours","ツアー"],["newMember","新規入会"]];
 const WEEK = "日月火水木金土";
 const slash = s => s.replace(/-/g, "/");
 
@@ -139,9 +122,9 @@ function go(view, param = null, flash = null){ Object.assign(ui, {view, param, f
 const badge = (cls, text) => `<span class="badge ${cls}">${esc(text)}</span>`;
 const rankBadge = r => badge("rank-" + r.code, r.name);
 const memberBtn = m => `<button type="button" class="linkish mono" data-go="member" data-arg="${m.member_no}">${m.member_no}</button>`;
-const head = (eyebrow, title, actions = "", back = "") =>
-  `<div class="head"><div>${back}<div class="eyebrow">${eyebrow}</div><h1>${esc(title)}</h1></div>${actions ? `<div class="actions">${actions}</div>` : ""}</div>`;
-const dateBlock = d => { const [, mo, day] = d.split("-").map(Number); return `<div class="d"><span>${mo}月</span><b>${day}</b><span>${WEEK[parse(d).getUTCDay()]}</span></div>`; };
+const head = (title, actions = "", back = "") =>
+  `${back ? `<div>${back}</div>` : ""}<div class="head"><h1>${esc(title)}</h1>${actions ? `<div class="actions">${actions}</div>` : ""}</div>`;
+const dateBlock = d => { const [, mo, day] = d.split("-").map(Number); return `<span class="d">${mo}/${day}（${WEEK[parse(d).getUTCDay()]}）</span>`; };
 
 function cancelBtn(b){
   if (b.status !== "booked") return "";
@@ -153,10 +136,9 @@ function cancelBtn(b){
 
 function ticket(m, rank){
   return `<div class="ticket" role="img" aria-label="会員証 ${m.member_no}">
-    <div class="t-main"><div><div class="t-brand">バスツアー会員</div><div class="t-label">Member's Pass</div></div>
-      <div class="t-no">${m.member_no}</div>
-      <div><div class="t-name">${esc(m.name)} 様</div><div class="t-label">Since ${m.joined_on.slice(0,4)}.${m.joined_on.slice(5,7)}</div></div></div>
-    <div class="t-stub"><div class="t-label">Class</div><div class="t-class ${rank.code}">${esc(rank.name)}</div><div class="t-mark">×${rank.multiplier}</div></div></div>`;
+    <div class="t-head"><span>バスツアー会員証</span><span>${esc(rank.name)}</span></div>
+    <div class="t-body"><div class="t-no">${m.member_no}</div><div class="t-name">${esc(m.name)} 様</div>
+      <dl><div><dt>入会</dt><dd>${m.joined_on.slice(0,4)}年${Number(m.joined_on.slice(5,7))}月</dd></div><div><dt>ポイント倍率</dt><dd>${rank.multiplier}倍</dd></div></dl></div></div>`;
 }
 
 function historyTable(mid){
@@ -182,10 +164,10 @@ const views = {
     const q = ui.query.trim();
     const list = (q ? db.members.filter(m => [m.member_no,m.name,m.kana,m.phone,m.email].some(v => (v || "").includes(q))) : db.members)
       .slice().sort((a,b) => b.id - a.id).slice(0, 50);
-    return `${head("Dashboard", "ダッシュボード", `<button type="button" class="btn" data-go="newMember">＋ 新規入会</button>`)}
+    return `${head("ホーム", `<button type="button" class="btn" data-go="newMember">＋ 新規入会</button>`)}
     ${flashHtml()}
     <div class="kpis">
-      <div class="kpi feature"><span>未使用ポイント残高</span><b class="num">${yen(outstanding)}<small>pt</small></b><em>${yen(outstanding)}円相当の値引き予定</em></div>
+      <div class="kpi"><span>未使用ポイント残高</span><b class="num">${yen(outstanding)}<small>pt</small></b><em>${yen(outstanding)}円相当の値引き予定</em></div>
       <div class="kpi"><span>有効会員数</span><b class="num">${yen(active.length)}<small>名</small></b><em>退会者を除く</em></div>
       <div class="kpi ${expiring ? "warn" : ""}"><span>90日以内に失効予定</span><b class="num">${yen(expiring)}<small>pt</small></b><em>${slash(soon)} まで</em></div>
       <div class="kpi"><span>催行予定ツアー</span><b class="num">${scheduled.length}<small>件</small></b><em>${scheduled[0] ? `次の出発 ${slash(scheduled[0].depart_date)}` : "予定なし"}</em></div>
@@ -225,13 +207,13 @@ const views = {
         <p class="small muted">退会すると保有ポイント ${yen(bal)}pt はすべて失効します。参加予定のツアーがある場合は先に取り消してください。</p>
         <label class="check"><input type="checkbox" name="confirm" id="wd-confirm"> 保有ポイントが失効することをお客様に説明済み</label>
         <div><button class="btn danger">退会処理</button></div></form></section></div>`;
-    return `${head("Member", m.name + " 様", "", `<button type="button" class="back" data-go="home">← ダッシュボード</button>`)}
+    return `${head(m.name + " 様", "", `<button type="button" class="back" data-go="home">← ホームに戻る</button>`)}
     ${flashHtml()}
     <section class="card"><div class="profile">
       <div>${ticket(m, rank)}</div>
       <div class="grid" style="gap:1rem">
         <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">${rankBadge(rank)}${m.status === "active" ? "" : badge("st-cancelled","退会済")}<span class="small muted">直近1年の参加 ${rank.tours}回${next ? `・あと${next[2] - rank.tours}回で${next[1]}` : "・最上位ランク"}</span></div>
-        <div><div class="eyebrow">Balance</div><div class="bal"><b class="num">${yen(bal)}</b><span>pt</span></div></div>
+        <div><div class="lbl">保有ポイント</div><div class="bal"><b class="num">${yen(bal)}</b><span>pt</span></div></div>
         <div class="facts-row">${sched.length ? sched.map(([d,p]) => `<span>${slash(d)} まで <b>${yen(p)}pt</b></span>`).join("") : `<span>有効なポイントはありません</span>`}</div>
       </div></div></section>
     <div class="grid two">
@@ -248,7 +230,7 @@ const views = {
   },
 
   newMember(){
-    return `${head("New Member", "新規入会")}
+    return `${head("新規入会")}
     ${flashHtml()}
     <section class="card" style="max-width:860px"><form data-form="register" class="form-grid">
       <label class="field"><span>氏名（必須）</span><input class="input" id="r-name" name="name" required value="高橋 美咲"></label>
@@ -257,7 +239,7 @@ const views = {
       <label class="field"><span>メールアドレス</span><input class="input" id="r-email" name="email" type="email"></label>
       <label class="field"><span>生年月日</span><input class="input" id="r-birth" name="birthdate" type="date" value="1962-${today.slice(5,7)}-08"><small>誕生月特典に使います</small></label>
       <label class="field"><span>紹介者の会員番号（任意）</span><input class="input mono" id="r-ref" name="referrer_no" placeholder="${db.members[0] ? db.members[0].member_no : "BT00000018"}"></label>
-      <label class="field"><span>会員アプリの暗証番号（必須）</span><input class="input" id="r-pin" name="pin" inputmode="numeric" required value="1111"><small>4〜8桁の数字。お客様に決めていただきます</small></label>
+      <label class="field"><span>会員ページの暗証番号（必須）</span><input class="input" id="r-pin" name="pin" inputmode="numeric" required value="1111"><small>4〜8桁の数字。お客様に決めていただきます</small></label>
       <div class="field"><span>入会特典</span><p class="small muted" style="padding-top:.5rem">登録すると ${RULES.WELCOME_BONUS}pt が付き、会員番号が発行されます。</p></div>
       <div class="form-actions full"><button class="btn">入会登録</button><span class="small muted">入力欄にはサンプルの値が入っています</span></div>
     </form></section>`;
@@ -270,7 +252,7 @@ const views = {
       const st = t.status === "scheduled" ? "st-booked" : t.status === "completed" ? "st-completed" : "st-cancelled";
       return `<tr><td class="nowrap num">${slash(t.depart_date)}（${WEEK[parse(t.depart_date).getUTCDay()]}）</td><td><button type="button" class="linkish" data-go="tour" data-arg="${t.id}">${esc(t.name)}</button><span class="sub mono">${esc(t.code)}</span></td><td class="r">${yen(t.price)}円</td><td>${camp ? badge("rank-gold plain", camp) : `<span class="muted">-</span>`}</td><td class="r">${n}名</td><td>${badge(st, TOUR[t.status])}</td></tr>`;
     }).join("");
-    return `${head("Tours", "ツアー")}
+    return `${head("ツアー")}
     ${flashHtml()}
     <section class="card"><div class="tablewrap"><table class="t"><thead><tr><th>出発日</th><th>ツアー</th><th class="r">代金</th><th>キャンペーン</th><th class="r">人数</th><th>状態</th></tr></thead><tbody>${rows}</tbody></table></div></section>
     <section class="card"><h2>ツアーを登録する</h2><form data-form="tour" class="form-grid">
@@ -302,7 +284,7 @@ const views = {
     const booked = bookings.filter(b => b.status === "booked");
     const sample = db.members.find(m => m.status === "active" && !bookings.some(b => b.member_id === m.id && b.status !== "cancelled"));
     const st = t.status === "scheduled" ? "st-booked" : t.status === "completed" ? "st-completed" : "st-cancelled";
-    return `${head("Tour", t.name, "", `<button type="button" class="back" data-go="tours">← ツアー一覧</button>`)}
+    return `${head(t.name, "", `<button type="button" class="back" data-go="tours">← ツアー一覧に戻る</button>`)}
     ${flashHtml()}
     <section class="card"><div class="facts-row" style="font-size:var(--t-md)">
       <span>${badge(st, TOUR[t.status])}</span><span>出発日 <b>${slash(t.depart_date)}（${WEEK[parse(t.depart_date).getUTCDay()]}）</b></span><span>代金 <b>${yen(t.price)}円</b></span><span>コード <b class="mono">${esc(t.code)}</b></span>${camp ? `<span>キャンペーン <b>${camp}</b></span>` : ""}
@@ -319,7 +301,7 @@ const views = {
       <section class="card"><h2>催行完了・ポイント付与</h2><form data-form="complete" style="display:grid;gap:.6rem">
         ${booked.map(b => `<label class="check"><input type="checkbox" name="absent" value="${b.id}"> ${esc(memberById(b.member_id).name)} 様は当日不参加</label>`).join("") || `<p class="muted small">参加予定の方はいません。</p>`}
         <div><button class="btn" ${t.depart_date > today ? "disabled" : ""}>催行完了として付与</button></div></form>
-        <p class="small muted">${t.depart_date > today ? `出発日（${slash(t.depart_date)}）以降に実行できます。サイドバーの「デモの日付」を出発日以降にすると試せます。` : "不参加の方には付与されず、使ったポイントも戻りません。"}</p></section>
+        <p class="small muted">${t.depart_date > today ? `出発日（${slash(t.depart_date)}）以降に実行できます。画面上部の「デモ 日付」を出発日以降にすると試せます。` : "不参加の方には付与されず、使ったポイントも戻りません。"}</p></section>
     </div>
     <section class="card danger-zone"><h2>催行中止</h2><form data-form="cancel-tour" style="display:grid;gap:.8rem">
       <label class="check"><input type="checkbox" name="confirm" id="ct-confirm"> 全員の予約を取り消し、使ったポイントをお戻しする</label>
@@ -333,7 +315,7 @@ function render(){
   const cur = ui.view === "member" ? "home" : ui.view === "tour" ? "tours" : ui.view;
   document.getElementById("menu").innerHTML = MENU.map(([v,l]) => `<button type="button" data-go="${v}" ${cur === v ? 'aria-current="page"' : ""}>${ICON[v]}${l}</button>`).join("");
   document.getElementById("demo-date").value = today;
-  let html = `<div class="mobile-demo"><b>デモ</b><label>日付 <input type="date" id="demo-date-m" value="${today}"></label><button type="button" class="btn sm ghost" data-act="reset">初期化</button></div>`;
+  let html = "";
   try { html += views[ui.view](); }
   catch (e) { if (!(e instanceof PointError)) throw e; html += `<div class="toast err">${esc(e.message)}</div>`; }
   app.innerHTML = html;
@@ -365,7 +347,7 @@ document.addEventListener("click", e => {
 });
 
 document.addEventListener("change", e => {
-  if (e.target.id === "demo-date" || e.target.id === "demo-date-m") setDate(e.target.value);
+  if (e.target.id === "demo-date") setDate(e.target.value);
 });
 
 document.addEventListener("submit", e => {
@@ -388,7 +370,7 @@ document.addEventListener("submit", e => {
   });
 });
 
-// 会員アプリ（別タブ・スマホ表示の枠）での変更を反映する
+// 会員ページ（別タブ・スマホ表示の枠）での変更を反映する
 window.addEventListener("storage", e => { if (e.key === STORE_KEY){ bootData(); render(); } });
 
 bootData();
