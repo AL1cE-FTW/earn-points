@@ -10,7 +10,7 @@ const MICHI = {
   WINDOW_DAYS: 365,
 };
 const TOUR_KIND = {normal:"通常ツアー", michi:"道ツアー"};
-const CONTACT = {app:"会員アプリ", phone:"電話", mail:"郵送"};
+const CONTACT = {app:"会員ページ", phone:"電話", mail:"郵送"};
 
 // 保存先を現行版と分ける（points.js の save / load を置き換える）
 function save(){ try { localStorage.setItem(MICHI_KEY, JSON.stringify({db, today})); } catch (e) {} }
