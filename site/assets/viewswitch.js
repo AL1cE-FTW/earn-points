@@ -5,12 +5,14 @@
   "use strict";
   if (window.self !== window.top) { document.documentElement.classList.add("in-device"); return; }
 
+  // data-view="phone" のページ（会員画面）は毎回スマホ表示で開く。切り替えは保存しない
+  const fixed = document.currentScript && document.currentScript.dataset.view;
   const KEY = "bt-view-mode";
   const W = 390, H = 844;
   const wide = matchMedia("(min-width: 960px)");
   const get = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
   const set = v => { try { localStorage.setItem(KEY, v); } catch (e) {} };
-  let mode = get() === "phone" ? "phone" : "pc";
+  let mode = fixed || (get() === "phone" ? "phone" : "pc");
 
   const bar = document.createElement("div");
   bar.className = "viewswitch";
@@ -45,11 +47,11 @@
   bar.addEventListener("click", e => {
     const b = e.target.closest("[data-view]");
     if (!b) return;
-    mode = b.dataset.view; set(mode); apply();
+    mode = b.dataset.view; if (!fixed) set(mode); apply();
   });
   window.addEventListener("resize", fit);
   wide.addEventListener("change", apply);
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && mode === "phone") { mode = "pc"; set(mode); apply(); } });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && mode === "phone") { mode = "pc"; if (!fixed) set(mode); apply(); } });
 
   function mount() { document.body.append(stage, bar); apply(); }
   document.body ? mount() : document.addEventListener("DOMContentLoaded", mount);
