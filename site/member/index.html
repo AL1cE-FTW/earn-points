@@ -21,11 +21,6 @@ main{width:100%;max-width:1040px;margin:0 auto;padding-inline:16px;padding-block
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;display:grid;gap:.7rem;align-content:start;min-width:0}
 .card h2{font-size:var(--t-md);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:.5rem}
 .card h2 .link{margin-left:auto;font:inherit;font-size:var(--t-sm);font-weight:400;background:none;border:0;color:var(--link);cursor:pointer;padding:0;text-decoration:underline}
-.ticket-wrap{display:grid;gap:.4rem;justify-items:center}
-.ticket-wrap p{font-size:var(--t-sm);color:var(--ink-2)}
-.balance{display:flex;align-items:baseline;gap:.3rem}
-.balance b{font-size:2.6rem;line-height:1.1;color:var(--accent)}
-.balance span{font-weight:700}
 .notice{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:var(--radius-sm);padding:.5rem .7rem;font-size:var(--t-sm)}
 table.plain{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
 table.plain th,table.plain td{padding:.45rem .2rem;border-bottom:1px solid var(--line);text-align:left;font-weight:400}
@@ -73,6 +68,35 @@ form.stack{display:grid;gap:.8rem}
 .navbtn[aria-current="page"]{color:var(--brand)}
 .tabbar .navbtn[aria-current="page"]{box-shadow:inset 0 3px 0 var(--brand)}
 .side{display:none}
+
+/* アプリ風：角丸・影・グラデーションの会員カード（このページだけ。共通のui.cssは業務画面のまま） */
+:root{--radius:14px;--radius-sm:10px}
+.appbar{background:var(--surface);color:var(--brand);box-shadow:0 1px 0 var(--line)}
+.card{border:0;border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);padding:1.1rem 1.2rem}
+.card h2{border-bottom:0;padding-bottom:0}
+.hero{--c1:#2a8c63;--c2:#14513a;position:relative;overflow:hidden;color:#fff;border-radius:20px;padding:1.1rem 1.3rem 1.2rem;display:grid;gap:.15rem;
+  background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 10px 24px rgba(20,81,58,.28)}
+.hero::after{content:"";position:absolute;right:-50px;top:-60px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.1)}
+.hero.rank-silver{--c1:#7d8a99;--c2:#3e4955;box-shadow:0 10px 24px rgba(62,73,85,.28)}
+.hero.rank-gold{--c1:#d4a53c;--c2:#8a5d12;box-shadow:0 10px 24px rgba(138,93,18,.3)}
+.hero .h-top{display:flex;justify-content:space-between;align-items:center;font-size:var(--t-xs);font-weight:700;opacity:.95}
+.hero .h-rank{background:rgba(255,255,255,.22);border-radius:999px;padding:.05rem .7rem}
+.hero .h-label{margin-top:.6rem;font-size:var(--t-xs);opacity:.85}
+.hero .h-pt{display:flex;align-items:baseline;gap:.3rem;line-height:1.1}
+.hero .h-pt b{font-size:2.9rem;letter-spacing:.01em}
+.hero .h-pt span{font-weight:700;font-size:var(--t-lg)}
+.hero .h-foot{display:flex;justify-content:space-between;gap:1rem;margin-top:.8rem;font-size:var(--t-sm)}
+.hero .h-foot .mono{letter-spacing:.08em}
+.hero-note{text-align:center;font-size:var(--t-xs);color:var(--ink-2);margin-top:.4rem}
+.chip-next{margin-top:.8rem;display:flex;align-items:center;gap:.6rem;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:.45rem 1rem;font-size:var(--t-sm);font-weight:700}
+.chip-next b{margin-left:auto;white-space:nowrap}
+.route{border:0;gap:6px;overflow:visible}
+.route .stop{border:0;border-radius:12px;background:var(--surface-2)}
+.route .stop.done{background:var(--brand-soft)}
+.tabbar{box-shadow:0 -4px 16px rgba(0,0,0,.06);border-top:0}
+.tabbar .navbtn[aria-current="page"]{box-shadow:none}
+.tabbar .navbtn svg{width:46px;height:28px;padding:3px 12px;border-radius:999px;box-sizing:border-box}
+.tabbar .navbtn[aria-current="page"] svg{background:var(--brand-soft)}
 
 @media (min-width:960px){
   .app.signed{grid-template-columns:240px 1fr}
@@ -136,11 +160,12 @@ function histRow(r){
 }
 const histTable = rows => `<table class="hist"><thead><tr><th>日付</th><th>内容</th><th style="text-align:right">ポイント</th></tr></thead><tbody>${rows.map(histRow).join("")}</tbody></table>`;
 
-function ticket(m, rank){
-  return `<div class="ticket" role="img" aria-label="会員証 ${m.member_no} ${esc(m.name)}様 ${rank.name}">
-    <div class="t-head"><span>バスツアー会員証</span><span>${esc(rank.name)}</span></div>
-    <div class="t-body"><div class="t-no">${m.member_no}</div><div class="t-name">${esc(m.name)} 様</div>
-      <dl><div><dt>入会</dt><dd>${m.joined_on.slice(0,4)}年${Number(m.joined_on.slice(5,7))}月</dd></div><div><dt>ポイント倍率</dt><dd>${rank.multiplier}倍</dd></div></dl></div></div>`;
+function hero(m, rank, bal){
+  return `<section class="hero rank-${rank.code}" aria-label="会員証 ${m.member_no} ${esc(m.name)}様 ${esc(rank.name)} 保有${yen(bal)}ポイント">
+    <div class="h-top"><span>バスツアー会員証</span><span class="h-rank">${esc(rank.name)}・${rank.multiplier}倍</span></div>
+    <div class="h-label">保有ポイント</div>
+    <div class="h-pt"><b class="num">${yen(bal)}</b><span>pt</span></div>
+    <div class="h-foot"><span class="mono">${m.member_no}</span><span>${esc(m.name)} 様</span></div></section>`;
 }
 
 function rankRoute(rank){
@@ -172,14 +197,14 @@ const views = {
           <dt>お支払い</dt><dd>${yen(b.price - b.points_used)}円</dd><dt>ポイント利用</dt><dd>${yen(b.points_used)}pt</dd><dt>付与予定</dt><dd class="plus">+${yen(gain)}pt</dd></dl>
       </section>`;
     }
+    const chip = up ? `<div class="chip-next" role="note">次のツアーまで<b>${(d => d === 0 ? "本日出発" : `あと${d}日`)(Math.round((parse(up.t.depart_date) - parse(today)) / 864e5))}</b></div>` : "";
     return `
-    <div class="page-title"><h1>${esc(m.name)} 様の会員証</h1></div>
+    <div class="page-title"><h1>こんにちは、${esc(m.name)} 様</h1></div>
     ${flashHtml()}
     <div class="grid two">
-      <div class="ticket-wrap">${ticket(m, rank)}<p>ツアー当日、受付でこの画面をお見せください</p></div>
+      <div>${hero(m, rank, bal)}<p class="hero-note">ツアー当日、受付でこの画面をお見せください</p>${chip}</div>
       <section class="card" aria-labelledby="bal-h">
-        <h2 id="bal-h">保有ポイント</h2>
-        <div class="balance"><b class="num">${yen(bal)}</b><span>pt</span></div>
+        <h2 id="bal-h">ポイントの使い方と期限</h2>
         <p class="small muted">${yen(bal)}円分としてツアー代金に使えます（${RULES.REDEEM_UNIT}pt単位）</p>
         ${soonPts ? `<div class="notice"><b>${yen(soonPts)}pt</b> の有効期限が近づいています（${jp(soon[0][0])}まで）</div>` : ""}
         ${sched.length ? `<div class="small muted">有効期限ごとの内訳</div><table class="plain">${sched.slice(0, 3).map(([d,p]) => `<tr><th>${jp(d)}まで</th><td>${yen(p)}pt</td></tr>`).join("")}</table>` : `<p class="small muted">有効なポイントはありません。</p>`}
