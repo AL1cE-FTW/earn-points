@@ -332,9 +332,66 @@ function openCard(){
       <p class="cv-pt">保有 <b>${num(ui.me.balance)}</b> pt</p>
     </div>
     <p class="cv-note">${ICONS.bus}<span>受付でお見せください</span></p>
-    <form method="dialog"><button class="btn block">閉じる</button></form></div>`;
+    <button type="button" class="btn block" data-close>閉じる</button></div>`;
   if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+  if (!canAnimate()) return;
+  dlg.animate([{opacity: 0}, {opacity: 1}], {duration: 260, easing: "ease-out"});
+  dlg.querySelector(".cv-card").animate([{opacity: 0, transform: "translateY(22px) scale(.95)"}, {opacity: 1, transform: "none"}],
+    {duration: 620, delay: 60, easing: EASE_OUT, fill: "backwards"});
+  [...dlg.querySelectorAll(".cv-note, [data-close]")].forEach((el, i) => el.animate([{opacity: 0, transform: "translateY(8px)"}, {opacity: 1, transform: "none"}],
+    {duration: 500, delay: 260 + i * 70, easing: EASE_OUT, fill: "backwards"}));
+  const chip = dlg.querySelector(".stage-chip"); chip.classList.add("shine");
 }
+async function closeCard(){
+  const dlg = document.getElementById("cardview");
+  if (!dlg || !dlg.open) return;
+  if (canAnimate()){
+    dlg.querySelector(".cv-card").animate([{opacity: 1, transform: "none"}, {opacity: 0, transform: "scale(.97)"}], {duration: 200, easing: "ease-in", fill: "forwards"});
+    await dlg.animate([{opacity: 1}, {opacity: 0}], {duration: 240, easing: "ease-in", fill: "forwards"}).finished.catch(() => {});
+  }
+  dlg.close ? dlg.close() : dlg.removeAttribute("open");
+  dlg.getAnimations().forEach(a => a.cancel());
+}
+
+// --- 動き：ゆっくり・小さく・なめらかに。動きを減らす設定の端末では何もしない -------------
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+const EASE_OUT = "cubic-bezier(.16,1,.3,1)";   // 最初は速く、最後はゆっくり止まる
+const canAnimate = () => !reduceMotion.matches && typeof Element.prototype.animate === "function";
+const tabIndex = t => TABS.findIndex(x => x[0] === t);
+
+// 今の画面を、進む方向へ少しずらしながら消す
+function leave(dir){
+  const m = document.getElementById("main");
+  if (!m || !canAnimate()) return Promise.resolve();
+  return m.animate([{opacity: 1, transform: "none"}, {opacity: 0, transform: `translateX(${-14 * dir}px)`}],
+    {duration: 170, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards"}).finished.catch(() => {});
+}
+// 新しい画面のカードを、上から順に少しずつ時間差で浮かび上がらせる
+function enter(dir = 0){
+  if (!canAnimate()) return;
+  const m = root.querySelector("main");
+  if (!m) return;
+  [...m.children].forEach((el, i) => el.animate(
+    [{opacity: 0, transform: `translate(${16 * dir}px, 14px)`}, {opacity: 1, transform: "none"}],
+    {duration: 560, delay: Math.min(i, 8) * 55, easing: EASE_OUT, fill: "backwards"}));
+  m.querySelectorAll(".bar i").forEach(el => el.animate([{transform: "scaleX(0)"}, {transform: "scaleX(1)"}],
+    {duration: 1100, delay: 250, easing: EASE_OUT, fill: "backwards"}));
+  m.querySelectorAll(".stage-chip").forEach(el => { el.classList.remove("shine"); void el.offsetWidth; el.classList.add("shine"); });
+}
+// 保有ポイントを 0 から数え上げる（ログインした直後だけ）
+function countUp(){
+  const el = root.querySelector(".pts-num b");
+  if (!el || !ui.me || !canAnimate()) return;
+  const to = ui.me.balance, start = performance.now(), dur = 900;
+  const step = now => {
+    const t = Math.min(1, (now - start) / dur);
+    el.textContent = num(Math.round(to * (1 - Math.pow(1 - t, 3))));
+    if (t < 1 && document.body.contains(el)) requestAnimationFrame(step);
+  };
+  el.textContent = "0"; requestAnimationFrame(step);
+}
+// ログイン・ログアウト・最初の表示のとき
+function show(){ render(); window.scrollTo(0, 0); enter(0); if (ui.me && ui.tab === "home") countUp(); }
 
 function render(){
   if (ui.loading) return;
@@ -351,12 +408,21 @@ function render(){
 
 // --- 操作 ------------------------------------------------------------------
 async function goTab(tab){
-  ui.tab = TABS.some(t => t[0] === tab) ? tab : "home";
-  render(); window.scrollTo(0, 0);
-  if (ui.tab === "history" || ui.tab === "tours"){ await loadTab(); render(); }
+  const next = TABS.some(t => t[0] === tab) ? tab : "home";
+  const dir = Math.sign(tabIndex(next) - tabIndex(ui.tab));
+  const prev = ui.tab;
+  ui.tab = next;
+  let ready = true;
+  const loading = (next === "history" || next === "tours") ? (ready = false, loadTab().then(() => { ready = true; })) : null;
+  if (prev !== next) await leave(dir || 1);
+  if (loading) await Promise.race([loading, new Promise(r => setTimeout(r, 250))]);   // 遅いときは先に「読み込み中」を出す
+  const shownWithData = ready;
+  render(); window.scrollTo(0, 0); enter(dir);
+  if (loading && !shownWithData){ await loading; if (ui.tab === next){ render(); enter(0); } }
 }
 
 document.addEventListener("click", async e => {
+  if (e.target.closest("[data-close]")){ closeCard(); return; }
   if (e.target.closest("[data-card]")){ openCard(); return; }
   const tab = e.target.closest("[data-tab]");
   if (tab){ if (location.hash !== "#" + tab.dataset.tab) location.hash = tab.dataset.tab; else goTab(tab.dataset.tab); return; }
@@ -374,7 +440,7 @@ document.addEventListener("click", async e => {
   if (act.dataset.act === "logout"){
     try { await api("POST", "/api/logout"); } catch (err) {}
     remember(null); Object.assign(ui, {me: null, history: null, tours: null, offlineAt: null, flash: ["ok", "ログアウトしました"]});
-    history.replaceState(null, "", location.pathname); ui.tab = "home"; render();
+    history.replaceState(null, "", location.pathname); ui.tab = "home"; show();
   } else if (act.dataset.act === "install" && ui.installEvent){
     ui.installEvent.prompt(); ui.installEvent = null; render();
   }
@@ -391,6 +457,7 @@ document.addEventListener("submit", async e => {
     if (f.dataset.form === "login"){
       await api("POST", "/api/login", {member_no: v.member_no, pin: v.pin});
       ui.tab = "home"; await loadMe();
+      if (ui.me){ show(); return; }
     } else if (f.dataset.form === "pin"){
       await api("POST", "/api/pin", {current: v.current, next: v.next});
       ui.flash = ["ok", "暗証番号を変更しました"];
@@ -415,7 +482,7 @@ window.memberApp = {async reload(){ await loadMe(); if (ui.me && (ui.tab === "hi
 (async () => {
   await loadMe();
   ui.tab = TABS.some(t => t[0] === location.hash.slice(1)) ? location.hash.slice(1) : "home";
-  render();
-  if (ui.me && (ui.tab === "history" || ui.tab === "tours")){ await loadTab(); render(); }
+  if (ui.me && (ui.tab === "history" || ui.tab === "tours")) await loadTab();
+  show();
 })();
 })();
