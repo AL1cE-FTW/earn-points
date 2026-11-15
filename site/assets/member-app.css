@@ -1,0 +1,189 @@
+/* 会員アプリ（マイレージ会員アプリ風）。色は ui.css の紺（--brand）と空色（--sky）を使う。
+   ※ site/assets/member-app.css はこのファイルのコピー（tests/test_static_sync.py で一致を確認）。 */
+:root{--radius:12px;--radius-sm:8px;--shadow:0 1px 2px rgba(10,30,70,.06),0 6px 20px rgba(10,30,70,.07)}
+html,body{min-height:100%}
+body{background:var(--bg)}
+.app{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1fr}
+.content{min-width:0;display:flex;flex-direction:column}
+main{width:100%;max-width:1040px;margin:0 auto;padding:0 16px calc(84px + env(safe-area-inset-bottom,0px));display:grid;gap:1rem;align-content:start}
+.page-title{padding-top:1rem}
+.page-title h1{font-size:var(--t-xl)}
+.grid{display:grid;gap:1rem}
+.grid > *{min-width:0}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.1rem 1.2rem;display:grid;gap:.75rem;align-content:start;min-width:0}
+.st-head{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.st-head h2{font-size:var(--t-md);margin-right:auto}
+.st-head .link{font:inherit;font-size:var(--t-sm);background:none;border:0;color:var(--link);cursor:pointer;padding:0}
+.loading{padding:2rem 0;text-align:center;color:var(--ink-2)}
+.offline{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:var(--radius-sm);padding:.5rem .8rem;font-size:var(--t-sm)}
+.notice{background:var(--warn-bg);color:var(--warn-ink);border-radius:var(--radius-sm);padding:.45rem .7rem;font-size:var(--t-sm)}
+.toast{border-radius:var(--radius-sm)}
+.btn{border-radius:999px}
+.input{border-radius:var(--radius-sm)}
+.badge{border-radius:999px;padding:0 .6em}
+.small{font-size:var(--t-sm)}
+table.plain{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+table.plain th,table.plain td{padding:.5rem .2rem;border-bottom:1px solid var(--line);text-align:left;font-weight:400}
+table.plain td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.kv{display:grid;grid-template-columns:1fr auto;gap:.4rem 1rem;font-size:var(--t-sm);margin:0}
+.kv dt{color:var(--ink-2)} .kv dd{margin:0;text-align:right}
+.how,.install ol{margin:0;padding-left:1.2rem;display:grid;gap:.3rem;font-size:var(--t-sm)}
+form.stack{display:grid;gap:.8rem}
+
+/* ヘッダー（紺の帯） */
+.appbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:.7rem;padding:.65rem 16px;padding-top:calc(.65rem + env(safe-area-inset-top,0px));background:var(--bar);color:var(--on-bar)}
+.brand{font-weight:700;font-size:1.05rem;letter-spacing:.04em;margin-right:auto}
+.demo{font-size:var(--t-xs);font-weight:700;padding:0 .55rem;border-radius:999px;background:var(--warn-bg);color:var(--warn-ink);white-space:nowrap}
+.cardbtn{font:inherit;font-size:var(--t-xs);font-weight:700;display:flex;align-items:center;gap:.3rem;padding:.3rem .75rem;border:1px solid rgba(255,255,255,.55);border-radius:999px;background:transparent;color:inherit;cursor:pointer}
+.cardbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
+
+/* ホーム：紺の帯の上に会員カード、その下に保有マイルの板を重ねる */
+.hero{background:var(--bar);color:var(--on-bar);margin:0 -16px;padding:.4rem 16px 4.2rem;display:grid;gap:.6rem;justify-items:center}
+.hero .hello{justify-self:start;font-size:var(--t-lg);font-weight:700}
+.hero .hint{font-size:var(--t-xs);opacity:.8;text-align:center}
+.pull{margin-top:-3.4rem;display:grid;gap:1rem;position:relative}
+
+/* 会員カード：ステイタスで色が変わる（実物のカードの見立て） */
+.mcard{width:100%;max-width:360px;aspect-ratio:1.586;border-radius:14px;padding:1rem 1.15rem;display:grid;grid-template-rows:auto 1fr auto;color:#fff;cursor:pointer;
+  background:linear-gradient(135deg,#1d6fd1 0%,#0a3d8f 62%,#072c6b 100%);box-shadow:0 10px 24px rgba(3,20,55,.35),inset 0 0 0 1px rgba(255,255,255,.18);position:relative;overflow:hidden}
+.mcard::before{content:"";position:absolute;inset:auto -20% -55% 35%;height:90%;border-radius:50%;background:rgba(255,255,255,.07)}
+.mcard.st-silver{background:linear-gradient(135deg,#d9dee5 0%,#9aa6b4 55%,#6f7b89 100%);color:#16202c}
+.mcard.st-gold{background:linear-gradient(135deg,#e9cf86 0%,#c39a3c 55%,#8f6a1c 100%);color:#2b1f05}
+.mcard > *{position:relative}
+.mc-top{display:flex;justify-content:space-between;align-items:center;gap:.6rem}
+.mc-brand{font-weight:700;letter-spacing:.06em;font-size:var(--t-sm)}
+.mc-status{font-size:var(--t-xs);font-weight:700;padding:.05rem .65rem;border-radius:999px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35)}
+.st-silver .mc-status,.st-gold .mc-status{background:rgba(255,255,255,.35);border-color:rgba(0,0,0,.12)}
+.mc-no{align-self:center;font-size:1.35rem;letter-spacing:.12em;font-weight:600}
+.mc-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:.6rem;font-size:var(--t-xs)}
+.mc-name{font-size:var(--t-md);font-weight:700}
+.mcard.big{max-width:420px;cursor:default}
+.mcard.big .mc-no{font-size:1.65rem}
+
+/* 保有マイル */
+.miles{gap:.35rem;text-align:center;padding-top:1.2rem}
+.mi-label{font-size:var(--t-sm);color:var(--ink-2);font-weight:700}
+.mi-num{display:flex;justify-content:center;align-items:baseline;gap:.35rem;color:var(--accent)}
+.mi-num b{font-size:3rem;line-height:1.1;letter-spacing:.01em}
+.mi-num span{font-weight:700;font-size:var(--t-md)}
+.mi-sub{font-size:var(--t-sm);color:var(--ink-2)}
+.miles .notice{margin-top:.3rem}
+.mi-facts{display:grid;grid-template-columns:repeat(3,1fr);margin:.6rem -1.2rem -1.1rem;border-top:1px solid var(--line)}
+.mi-facts div{padding:.65rem .3rem;border-left:1px solid var(--line)}
+.mi-facts div:first-child{border-left:0}
+.mi-facts dt{font-size:.75rem;color:var(--ink-2)}
+.mi-facts dd{margin:0;font-weight:700;font-size:var(--t-sm);font-variant-numeric:tabular-nums}
+
+/* よく使う機能 */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.tiles > *{font:inherit;display:grid;justify-items:center;gap:.3rem;padding:.75rem .2rem;border:0;border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);color:var(--ink);text-decoration:none;font-size:.75rem;font-weight:700;cursor:pointer}
+.tiles svg{width:30px;height:30px;padding:5px;border-radius:50%;background:var(--sky-soft);color:var(--brand);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;box-sizing:content-box}
+
+/* ステイタス */
+.st-next{font-size:var(--t-sm)}
+.st-next .big{font-size:1.6rem;color:var(--accent);margin:0 .1rem}
+.bar{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--brand))}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;text-align:center}
+.steps li{display:grid;padding:.4rem .2rem;border-radius:var(--radius-sm);background:var(--surface-2);font-size:.75rem;color:var(--ink-2)}
+.steps li b{font-size:var(--t-sm);color:var(--ink)}
+.steps li.done{background:var(--sky-soft)}
+.steps li.here{background:var(--brand);color:var(--on-brand)}
+.steps li.here b{color:var(--on-brand)}
+
+/* 搭乗券風の「次のツアー」 */
+.pass{display:grid;grid-template-columns:5.6rem 1fr;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.pass + .pass{margin-top:.6rem}
+.p-date{background:var(--brand);color:var(--on-brand);display:grid;align-content:center;justify-items:center;padding:.8rem .3rem;position:relative;font-size:var(--t-xs)}
+.p-date b{font-size:1.5rem;line-height:1.2}
+.p-date::after{content:"";position:absolute;right:-1px;top:8px;bottom:8px;border-right:2px dashed var(--surface)}
+.pass.michi .p-date{background:linear-gradient(160deg,#c39a3c,#8f6a1c)}
+.p-body{padding:.7rem .9rem;display:grid;gap:.35rem;min-width:0}
+.p-top{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;font-size:var(--t-xs)}
+.p-days{margin-left:auto;font-weight:700;color:var(--brand);background:var(--sky-soft);padding:0 .6rem;border-radius:999px}
+.p-label{font-weight:700;color:var(--ink-2)}
+.p-name{font-weight:700;overflow-wrap:anywhere}
+.p-rows{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.3rem .8rem;margin:0;border-top:1px dashed var(--line);padding-top:.45rem}
+.p-rows dd{white-space:nowrap}
+.p-rows dt{font-size:.72rem;color:var(--ink-2)} .p-rows dd{margin:0;font-weight:700;font-size:var(--t-sm);font-variant-numeric:tabular-nums}
+
+/* 招待（道ツアー） */
+.invite{border-radius:var(--radius);padding:1.1rem 1.2rem;display:grid;gap:.55rem;color:#2b1f05;
+  background:linear-gradient(135deg,#fbf3df,#f1dfae);box-shadow:var(--shadow);border:1px solid #d9b85f}
+.inv-kicker{font-size:var(--t-xs);font-weight:700;letter-spacing:.1em;color:#8a6414}
+.invite h2{font-size:var(--t-lg)}
+.invite dl{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin:0}
+.invite dt{font-size:.72rem;color:#7a6330} .invite dd{margin:0;font-weight:700;font-size:var(--t-sm)}
+.invite .state{font-size:var(--t-sm);padding:.55rem .75rem;border-radius:var(--radius-sm);background:rgba(255,255,255,.7)}
+.invite .actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.invite .small.muted{color:#7a6330}
+.goal .dots{display:flex;gap:.35rem}
+.goal .dots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--gold)}
+.goal .dots i.on{background:var(--gold)}
+
+/* マイル明細 */
+.stmt{list-style:none;margin:0;padding:0}
+.stmt .month{font-size:var(--t-xs);font-weight:700;color:var(--ink-2);padding:.8rem 0 .3rem;border-bottom:1px solid var(--line)}
+.stmt .month:first-child{padding-top:0}
+.stmt .row{display:grid;grid-template-columns:3.6rem 1fr auto;gap:.6rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--line)}
+.stmt .row:last-child{border-bottom:0}
+.r-date{font-size:var(--t-xs);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.r-what{font-size:var(--t-sm);min-width:0;overflow-wrap:anywhere}
+.r-what small{display:block;font-size:.75rem;color:var(--ink-2)}
+.r-pt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sum dl{display:grid;grid-template-columns:repeat(3,1fr);margin:0;text-align:center}
+.sum dt{font-size:.75rem;color:var(--ink-2)} .sum dd{margin:0;font-weight:700;font-size:var(--t-lg);font-variant-numeric:tabular-nums}
+.sum dd.accent{color:var(--accent)}
+
+/* 受付で見せる会員証（全画面） */
+#cardview{border:0;padding:0;margin:0;width:100vw;max-width:none;height:100dvh;max-height:none;background:var(--bar);color:var(--on-bar)}
+#cardview::backdrop{background:var(--bar)}
+.cv{min-height:100%;display:grid;gap:1rem;align-content:center;justify-items:center;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.cv-title{font-weight:700;letter-spacing:.1em}
+.cv-miles{font-size:var(--t-lg)} .cv-miles b{font-size:1.8rem}
+.cv-note{font-size:var(--t-sm);opacity:.85}
+.cv form{width:100%;max-width:420px}
+.cv .btn{background:var(--surface);color:var(--brand);border-color:var(--surface)}
+
+/* ログイン */
+.login{min-height:100vh;min-height:100dvh}
+.login .hero{margin:0;padding:calc(1rem + env(safe-area-inset-top,0px)) 16px 4.5rem;justify-items:stretch}
+.login .lg-head{display:flex;align-items:center;gap:.6rem}
+.login h1{font-size:var(--t-xl);margin-top:1.4rem}
+.login .hint{text-align:left;font-size:var(--t-sm)}
+.login main{max-width:480px;padding-bottom:3rem}
+.samples{display:flex;flex-wrap:wrap;gap:.4rem}
+.samples button{font:inherit;font-size:var(--t-sm);font-weight:700;padding:.4rem .8rem;border-radius:var(--radius-sm);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer;text-align:left}
+.samples button:hover{border-color:var(--brand);background:var(--brand-soft)}
+.samples small{display:block;font-weight:400;color:var(--ink-2);font-size:var(--t-xs)}
+
+/* メニュー（スマホ：下部タブ／PC：左のメニュー） */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);box-shadow:0 -1px 0 var(--line),0 -6px 18px rgba(10,30,70,.06);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar .tabs{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:62px}
+.navbtn{font:inherit;background:transparent;border:0;color:var(--ink-2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.72rem;font-weight:700}
+.navbtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.navbtn[aria-current="page"]{color:var(--brand)}
+.side{display:none}
+
+@media (min-width:960px){
+  .app.signed{grid-template-columns:240px 1fr}
+  .side{display:flex;flex-direction:column;gap:1.2rem;position:sticky;top:0;height:100vh;background:var(--bar);color:var(--on-bar);padding:1.2rem 0;overflow:auto}
+  .side .brand{padding:0 1.1rem;margin:0}
+  .side nav{display:grid;gap:2px;padding:0 .6rem}
+  .side .navbtn{flex-direction:row;justify-content:flex-start;gap:.7rem;font-size:var(--t-sm);padding:.7rem .8rem;color:var(--on-bar);opacity:.8;border-radius:var(--radius-sm)}
+  .side .navbtn:hover{background:rgba(255,255,255,.08);opacity:1}
+  .side .navbtn[aria-current="page"]{background:rgba(255,255,255,.16);color:var(--on-bar);opacity:1}
+  .side .who{margin-top:auto;padding:0 1.1rem;display:grid;font-size:var(--t-sm)}
+  .side .who span{opacity:.75;font-size:var(--t-xs)}
+  .side .links{display:grid;gap:.25rem;font-size:var(--t-xs);padding:0 1.1rem}
+  .side .links a,.side .links button{color:var(--on-bar);opacity:.85;background:none;border:0;padding:0;font:inherit;text-align:left;cursor:pointer;text-decoration:underline}
+  .tabbar{display:none}
+  .app.signed .appbar .brand{visibility:hidden}
+  main{padding:0 32px 3rem}
+  .hero{margin:0 -32px;padding:1rem 32px 4.5rem}
+  .tab-home .appbar{box-shadow:none}
+  .grid.two{grid-template-columns:1fr 1fr;align-items:start}
+  .grid.two-even{grid-template-columns:1fr 1fr;align-items:start}
+  .pull{grid-template-columns:1fr}
+  .tiles > *{padding:1rem .2rem;font-size:var(--t-sm)}
+}

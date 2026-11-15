@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS tours (
     depart_date      TEXT NOT NULL,
     price            INTEGER NOT NULL,           -- 税込1名あたり代金（円）
     bonus_multiplier REAL NOT NULL DEFAULT 1.0,  -- キャンペーン倍率
-    bonus_points     INTEGER NOT NULL DEFAULT 0, -- キャンペーン加算ポイント
+    bonus_points     INTEGER NOT NULL DEFAULT 0, -- キャンペーン加算マイル
     status           TEXT NOT NULL DEFAULT 'scheduled'  -- scheduled / completed / cancelled
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE UNIQUE INDEX IF NOT EXISTS bookings_active_uniq
     ON bookings(member_id, tour_id) WHERE status != 'cancelled';
 
--- ポイント取引台帳（増減はすべてここに記録する）
+-- マイル取引台帳（増減はすべてここに記録する）
 CREATE TABLE IF NOT EXISTS point_txns (
     id         INTEGER PRIMARY KEY,
     member_id  INTEGER NOT NULL REFERENCES members(id),
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS point_lots (
 );
 CREATE INDEX IF NOT EXISTS point_lots_member ON point_lots(member_id, expires_on);
 
--- どの付与分を何ポイント消費したか（キャンセル時の返還に使う）
+-- どの付与分を何マイル消費したか（キャンセル時の返還に使う）
 CREATE TABLE IF NOT EXISTS lot_usages (
     txn_id INTEGER NOT NULL REFERENCES point_txns(id),
     lot_id INTEGER NOT NULL REFERENCES point_lots(id),
