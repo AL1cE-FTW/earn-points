@@ -104,7 +104,7 @@
     rulesUrl: me.dataset.rules || "../",
     serviceWorker: false,
     cacheKey: SESSION_KEY + "-last",
-    badge: `<span class="demo" title="デモの日付">デモ ${today.replace(/-/g, "/")}</span>`,
+    badge: `<span class="demo" title="デモの日付 ${today.replace(/-/g, "/")}">デモ ${Number(today.slice(5,7))}/${Number(today.slice(8))}</span>`,
     loginHelp: `<section class="card"><div class="st-head"><h2>デモ用のサンプル会員</h2></div>
       <p class="small muted">押すと会員番号と暗証番号が入ります。${hasMichi ? "佐藤様・田中様には道ツアーの招待が届いています。" : ""}</p>
       <div class="samples">${samples.map(m => { const r = rankFor(m.id, today);
