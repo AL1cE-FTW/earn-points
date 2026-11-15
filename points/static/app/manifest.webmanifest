@@ -1,7 +1,7 @@
 {
   "name": "バスツアー会員",
   "short_name": "バスツアー会員",
-  "description": "会員証・保有マイル・ツアーを確認できます",
+  "description": "会員証・保有ポイント・ツアーを確認できます",
   "lang": "ja",
   "id": "/app/",
   "start_url": "/app/",

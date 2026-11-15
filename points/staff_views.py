@@ -125,7 +125,7 @@ def ticket(m, rank):
     return f"""<div class="ticket" role="img" aria-label="会員証 {m['member_no']}">
   <div class="t-head"><span>バスツアー会員証</span><span>{e(rank['name'])}</span></div>
   <div class="t-body"><div class="t-no">{m['member_no']}</div><div class="t-name">{e(m['name'])} 様</div>
-    <dl><div><dt>入会</dt><dd>{joined[:4]}年{int(joined[5:7])}月</dd></div><div><dt>マイル倍率</dt><dd>{rank['multiplier']:g}倍</dd></div></dl></div></div>"""
+    <dl><div><dt>入会</dt><dd>{joined[:4]}年{int(joined[5:7])}月</dd></div><div><dt>ポイント倍率</dt><dd>{rank['multiplier']:g}倍</dd></div></dl></div></div>"""
 
 
 def history_table(rows):
@@ -141,22 +141,22 @@ def history_table(rows):
                    f'<td>{e(reason)}</td><td class="muted nowrap">{e(r["operator"] or "-")}</td>'
                    f'<td class="r {"plus" if r["points"] > 0 else "minus"}"><b>{sign}{yen(abs(r["points"]))}</b></td></tr>')
     return ('<div class="tablewrap"><table class="t"><thead><tr><th>日付</th><th>区分</th><th>内容</th><th>担当</th>'
-            f'<th class="r">マイル</th></tr></thead><tbody>{"".join(out)}</tbody></table></div>')
+            f'<th class="r">ポイント</th></tr></thead><tbody>{"".join(out)}</tbody></table></div>')
 
 
 def cancel_button(b, back, token):
     if b["status"] != "booked":
         return ""
-    return (f'<form class="inline" method="post" action="/admin/bookings/{b["id"]}/cancel" data-confirm="この予約を取り消し、使ったマイルをお戻しします。よろしいですか？">'
+    return (f'<form class="inline" method="post" action="/admin/bookings/{b["id"]}/cancel" data-confirm="この予約を取り消し、使ったポイントをお戻しします。よろしいですか？">'
             f'{csrf_field(token)}<input type="hidden" name="back" value="{e(back)}"><button class="btn sm ghost">取消</button></form>')
 
 
 def tour_line(conn, t, extra=""):
     camp = []
     if t["bonus_multiplier"] != 1:
-        camp.append(f"マイル×{t['bonus_multiplier']:g}")
+        camp.append(f"ポイント×{t['bonus_multiplier']:g}")
     if t["bonus_points"]:
-        camp.append(f"+{yen(t['bonus_points'])}マイル")
+        camp.append(f"+{yen(t['bonus_points'])}pt")
     return (f'<a href="/admin/tours/{t["id"]}"><span class="d">{int(t["depart_date"][5:7])}/{int(t["depart_date"][8:])}（{wday(t["depart_date"])}）</span>'
             f'<span><span class="nm">{"【道ツアー】" if t["kind"] == "michi" else ""}{e(t["name"])}</span>'
             f'<span class="sub">{yen(t["price"])}円{"・" + "・".join(camp) if camp else ""}</span></span>'
@@ -173,7 +173,7 @@ def home(conn, today, q, token):
         f'<tr><td><a class="linkish mono" href="/admin/members/{m["member_no"]}">{m["member_no"]}</a></td>'
         f'<td>{e(m["name"])}<span class="sub">{e(m["kana"])}</span></td>'
         f'<td>{rank_badge(service.rank_for(conn, m["id"], today))}</td>'
-        f'<td class="r"><b>{yen(service.balance(conn, m["id"], today))}</b> マイル</td>'
+        f'<td class="r"><b>{yen(service.balance(conn, m["id"], today))}</b> pt</td>'
         f'<td>{badge("st-booked", "有効") if m["status"] == "active" else badge("st-cancelled", "退会")}</td></tr>'
         for m in members) or '<tr><td colspan="5" class="muted">該当する会員はいません</td></tr>'
     scheduled = conn.execute("SELECT * FROM tours WHERE status='scheduled' ORDER BY depart_date, id").fetchall()
@@ -191,9 +191,9 @@ def home(conn, today, q, token):
     first = scheduled[0]["depart_date"] if scheduled else None
     return f"""{head("ホーム", '<a class="btn" href="/admin/members/new">＋ 新規入会</a>')}
 <div class="kpis">
-  <div class="kpi"><span>未使用マイル残高</span><b class="num">{yen(d['outstanding'])}<small>マイル</small></b><em>{yen(d['outstanding'])}円相当の値引き予定</em></div>
+  <div class="kpi"><span>未使用ポイント残高</span><b class="num">{yen(d['outstanding'])}<small>pt</small></b><em>{yen(d['outstanding'])}円相当の値引き予定</em></div>
   <div class="kpi"><span>有効会員数</span><b class="num">{yen(d['members'])}<small>名</small></b><em>退会者を除く</em></div>
-  <div class="kpi {'warn' if d['expiring_soon'] else ''}"><span>{d['horizon_days']}日以内に失効予定</span><b class="num">{yen(d['expiring_soon'])}<small>マイル</small></b><em>{slash(soon.isoformat())} まで</em></div>
+  <div class="kpi {'warn' if d['expiring_soon'] else ''}"><span>{d['horizon_days']}日以内に失効予定</span><b class="num">{yen(d['expiring_soon'])}<small>pt</small></b><em>{slash(soon.isoformat())} まで</em></div>
   <div class="kpi"><span>催行予定ツアー</span><b class="num">{d['scheduled_tours']}<small>件</small></b><em>{f'次の出発 {slash(first)}' if first else '予定なし'}</em></div>
 </div>
 <div class="grid two">
@@ -204,7 +204,7 @@ def home(conn, today, q, token):
   <div class="grid" style="gap:1rem">
     {michi_card}
     <section class="card"><h2>次の出発</h2><div class="depart">{normal_next}</div></section>
-    <section class="card"><h2>期限切れマイルの失効処理</h2><p class="small muted">残高の表示では期限切れを自動で除いています。台帳に失効の記録を残すため、毎日自動で実行する設定にしてください（運用ガイド参照）。手動でも実行できます。</p>
+    <section class="card"><h2>期限切れポイントの失効処理</h2><p class="small muted">残高の表示では期限切れを自動で除いています。台帳に失効の記録を残すため、毎日自動で実行する設定にしてください（運用ガイド参照）。手動でも実行できます。</p>
       <form method="post" action="/admin/expire">{csrf_field(token)}<button class="btn ghost">失効処理を実行</button></form></section>
   </div>
 </div>"""
@@ -220,7 +220,7 @@ def member_form(token, referrer_hint=""):
   <label class="field"><span>生年月日</span><input class="input" name="birthdate" type="date"><small>誕生月特典に使います</small></label>
   <label class="field"><span>紹介者の会員番号（任意）</span><input class="input mono" name="referrer_no" placeholder="{e(referrer_hint)}"></label>
   <label class="field"><span>会員ページの暗証番号（必須）</span><input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off" required><small>4〜8桁の数字。お客様に決めていただきます</small></label>
-  <div class="field"><span>入会特典</span><p class="small muted" style="padding-top:.5rem">登録すると {rules.WELCOME_BONUS}マイル が付き、会員番号が発行されます。</p></div>
+  <div class="field"><span>入会特典</span><p class="small muted" style="padding-top:.5rem">登録すると {rules.WELCOME_BONUS}pt が付き、会員番号が発行されます。</p></div>
   <div class="form-actions full"><button class="btn">入会登録</button></div>
 </form></section>"""
 
@@ -242,11 +242,11 @@ def member_detail(conn, m, today, token):
     btable = (f'<div class="tablewrap"><table class="t"><thead><tr><th>出発日</th><th>ツアー</th><th class="r">代金</th><th class="r">利用pt</th><th>状態</th><th></th></tr></thead><tbody>{brows}</tbody></table></div>'
               if bookings else '<p class="muted small">ツアーの予約・参加はまだありません。</p>')
     nxt = f"・あと{rank['tours_to_next']}回で{rank['next_name']}" if rank["next_name"] else "・最上位ステイタス"
-    facts = "".join(f'<span>{slash(r["expires_on"])} まで <b>{yen(r["points"])}マイル</b></span>' for r in sched) or "<span>有効なマイルはありません</span>"
+    facts = "".join(f'<span>{slash(r["expires_on"])} まで <b>{yen(r["points"])}pt</b></span>' for r in sched) or "<span>有効なポイントはありません</span>"
     tools = "" if m["status"] != "active" else f"""
 <div class="grid two-even">
-  <section class="card"><h2>マイル調整</h2><form method="post" action="{base}/adjust" class="form-grid">{csrf_field(token)}
-    <label class="field"><span>マイル</span><input class="input num" name="points" inputmode="numeric" required placeholder="例: 200 / -100"><small>減らすときはマイナス</small></label>
+  <section class="card"><h2>ポイント調整</h2><form method="post" action="{base}/adjust" class="form-grid">{csrf_field(token)}
+    <label class="field"><span>ポイント</span><input class="input num" name="points" inputmode="numeric" required placeholder="例: 200 / -100"><small>減らすときはマイナス</small></label>
     <label class="field"><span>理由</span><input class="input" name="reason" required placeholder="例: 付与漏れの訂正"><small>履歴に残ります</small></label>
     <div class="form-actions full"><button class="btn">調整する</button></div></form></section>
   <section class="card"><h2>暗証番号の再設定</h2><form method="post" action="{base}/pin" class="form-grid" style="grid-template-columns:1fr">{csrf_field(token)}
@@ -254,15 +254,15 @@ def member_detail(conn, m, today, token):
     <div><button class="btn">再設定する</button></div></form></section>
 </div>
 <section class="card danger-zone"><h2>退会</h2><form method="post" action="{base}/withdraw" style="display:grid;gap:.8rem" data-confirm="退会処理をします。元に戻せません。よろしいですか？">{csrf_field(token)}
-  <p class="small muted">退会すると保有マイル {yen(bal)}マイル はすべて失効します。参加予定のツアーがある場合は先に取り消してください。</p>
-  <label class="check"><input type="checkbox" name="confirm" value="yes"> 保有マイルが失効することをお客様に説明済み</label>
+  <p class="small muted">退会すると保有ポイント {yen(bal)}pt はすべて失効します。参加予定のツアーがある場合は先に取り消してください。</p>
+  <label class="check"><input type="checkbox" name="confirm" value="yes"> 保有ポイントが失効することをお客様に説明済み</label>
   <div><button class="btn danger">退会処理</button></div></form></section>"""
     return f"""{head(m['name'] + ' 様', f'<a class="btn ghost" href="{base}/card">会員証を印刷</a>', back_link('/admin', 'ホームに戻る'))}
 <section class="card"><div class="profile">
   <div>{ticket(m, rank)}</div>
   <div class="grid" style="gap:1rem">
     <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">{rank_badge(rank)}{'' if m['status'] == 'active' else badge('st-cancelled', '退会済')}<span class="small muted">直近1年の参加 {rank['tours']}回{nxt}</span></div>
-    <div><div class="lbl">保有マイル</div><div class="bal"><b class="num">{yen(bal)}</b><span>マイル</span></div></div>
+    <div><div class="lbl">保有ポイント</div><div class="bal"><b class="num">{yen(bal)}</b><span>pt</span></div></div>
     <div class="facts-row">{facts}</div>
   </div></div></section>
 <div class="grid two">
@@ -272,7 +272,7 @@ def member_detail(conn, m, today, token):
     <dt>生年月日</dt><dd>{slash(m['birthdate']) if m['birthdate'] else '-'}</dd><dt>入会日</dt><dd>{slash(m['joined_on'])}</dd>
     {f'<dt>紹介者</dt><dd><a class="linkish mono" href="/admin/members/{ref["member_no"]}">{ref["member_no"]}</a> {e(ref["name"])}</dd>' if ref else ''}</dl></section>
 </div>
-<section class="card"><h2>マイル履歴</h2>{history_table(service.history(conn, m['id'], 500))}</section>
+<section class="card"><h2>ポイント履歴</h2>{history_table(service.history(conn, m['id'], 500))}</section>
 {tools}"""
 
 
@@ -288,11 +288,11 @@ def tours(conn, token):
     for t in service.list_tours(conn):
         camp = []
         if t["bonus_multiplier"] != 1:
-            camp.append(f"マイル×{t['bonus_multiplier']:g}")
+            camp.append(f"ポイント×{t['bonus_multiplier']:g}")
         if t["bonus_points"] and t["kind"] != "michi":
-            camp.append(f"+{yen(t['bonus_points'])}マイル")
+            camp.append(f"+{yen(t['bonus_points'])}pt")
         if t["kind"] == "michi":
-            camp.append(f"道ツアー特典 +{yen(t['bonus_points'])}マイル")
+            camp.append(f"道ツアー特典 +{yen(t['bonus_points'])}pt")
         rows.append(f'<tr><td class="nowrap num">{slash(t["depart_date"])}（{wday(t["depart_date"])}）</td>'
                     f'<td><a class="linkish" href="/admin/tours/{t["id"]}">{e(t["name"])}</a><span class="sub mono">{e(t["code"])}</span></td>'
                     f'<td>{badge("rank-gold", "道ツアー") if t["kind"] == "michi" else NORMAL_TAG}</td>'
@@ -309,8 +309,8 @@ def tours(conn, token):
   <label class="field"><span>招待条件（道ツアーのみ）</span><input class="input num" name="invite_min_tours" value="{md['min_tours']}" inputmode="numeric"><small>直近1年の通常ツアー参加回数がこの回数以上の会員を招待</small></label>
   <label class="field"><span>出発日</span><input class="input" name="depart_date" type="date" required></label>
   <label class="field"><span>代金（税込・1名）</span><input class="input num" name="price" inputmode="numeric" required></label>
-  <label class="field"><span>キャンペーン倍率</span><input class="input num" name="bonus_multiplier" value="1"><small>通常は 1。2 にするとマイル2倍</small></label>
-  <label class="field"><span>加算マイル</span><input class="input num" name="bonus_points" inputmode="numeric" placeholder="0"><small>通常ツアーはキャンペーン加算（空欄は0）。道ツアーは特典（空欄は {yen(md['bonus'])}マイル）</small></label>
+  <label class="field"><span>キャンペーン倍率</span><input class="input num" name="bonus_multiplier" value="1"><small>通常は 1。2 にするとポイント2倍</small></label>
+  <label class="field"><span>加算ポイント</span><input class="input num" name="bonus_points" inputmode="numeric" placeholder="0"><small>通常ツアーはキャンペーン加算（空欄は0）。道ツアーは特典（空欄は {yen(md['bonus'])}pt）</small></label>
   <div class="form-actions full"><button class="btn">登録する</button></div></form></section>"""
 
 
@@ -369,11 +369,11 @@ def tour_detail(conn, t, today, check, token):
                     f'<td>{badge("st-" + b["status"], BOOKING_LABELS[b["status"]])}</td><td class="r">{cancel_button(b, base, token) if open_ else ""}</td></tr>')
     camp = []
     if t["bonus_multiplier"] != 1:
-        camp.append(f"マイル×{t['bonus_multiplier']:g}")
+        camp.append(f"ポイント×{t['bonus_multiplier']:g}")
     if t["bonus_points"] and not michi:
-        camp.append(f"+{yen(t['bonus_points'])}マイル")
+        camp.append(f"+{yen(t['bonus_points'])}pt")
     facts = (f'<span>{badge(TOUR_STATUS_CLS[t["status"]], TOUR_LABELS[t["status"]])} {badge("rank-gold", "道ツアー") if michi else ""}</span>'
-             + (f'<span>招待条件 <b>直近1年で通常ツアー {t["invite_min_tours"]}回以上</b></span><span>道ツアー特典 <b>+{yen(t["bonus_points"])}マイル</b></span>' if michi else "")
+             + (f'<span>招待条件 <b>直近1年で通常ツアー {t["invite_min_tours"]}回以上</b></span><span>道ツアー特典 <b>+{yen(t["bonus_points"])}pt</b></span>' if michi else "")
              + f'<span>出発日 <b>{slash(t["depart_date"])}（{wday(t["depart_date"])}）</b></span><span>代金 <b>{yen(t["price"])}円</b></span>'
              f'<span>コード <b class="mono">{e(t["code"])}</b></span>' + (f'<span>キャンペーン <b>{"・".join(camp)}</b></span>' if camp else ""))
     active = [b for b in bookings if b["status"] != "cancelled"]
@@ -393,8 +393,8 @@ def tour_detail(conn, t, today, check, token):
                 hint = f'<div class="hint bad">{e(cm["name"])} 様は退会済みです。</div>'
             else:
                 checked = cm
-                hint = (f'<div class="hint"><b>{e(cm["name"])} 様</b>　残高 <b>{yen(service.balance(conn, cm["id"], today))}マイル</b>'
-                        f' ／ このツアーで使えるのは最大 <b>{yen(service.max_redeemable(conn, cm["id"], t["price"], today))}マイル</b></div>')
+                hint = (f'<div class="hint"><b>{e(cm["name"])} 様</b>　残高 <b>{yen(service.balance(conn, cm["id"], today))}pt</b>'
+                        f' ／ このツアーで使えるのは最大 <b>{yen(service.max_redeemable(conn, cm["id"], t["price"], today))}pt</b></div>')
         except service.PointError as ex:
             hint = f'<div class="hint bad">{e(ex)}</div>'
     booked = [b for b in bookings if b["status"] == "booked"]
@@ -406,16 +406,16 @@ def tour_detail(conn, t, today, check, token):
     <form method="get" action="{base}#book" class="search"><input class="input mono" name="check" value="{e(check)}" placeholder="会員番号（例: BT00000017）" aria-label="会員番号"><button class="btn ghost">残高を確認</button></form>
     {hint}
     <form method="post" action="{base}/book" class="search">{csrf_field(token)}<input type="hidden" name="member_no" value="{e(checked['member_no'] if checked else '')}">
-      <input class="input num" name="points" value="0" inputmode="numeric" aria-label="利用マイル" {'' if checked else 'disabled'}><button class="btn" {'' if checked else 'disabled'}>予約を登録</button></form>
-    <p class="small muted">{f'使うマイルを {rules.REDEEM_UNIT}マイル 単位で入力してください（使わない場合は 0）。' if checked else '先に会員番号を入れて「残高を確認」を押してください。'}</p>
+      <input class="input num" name="points" value="0" inputmode="numeric" aria-label="利用ポイント" {'' if checked else 'disabled'}><button class="btn" {'' if checked else 'disabled'}>予約を登録</button></form>
+    <p class="small muted">{f'使うポイントを {rules.REDEEM_UNIT}pt 単位で入力してください（使わない場合は 0）。' if checked else '先に会員番号を入れて「残高を確認」を押してください。'}</p>
   </section>
-  <section class="card"><h2>催行完了・マイル付与</h2><form method="post" action="{base}/complete" style="display:grid;gap:.6rem" data-confirm="参加者にマイルを付与します。よろしいですか？">{csrf_field(token)}
+  <section class="card"><h2>催行完了・ポイント付与</h2><form method="post" action="{base}/complete" style="display:grid;gap:.6rem" data-confirm="参加者にポイントを付与します。よろしいですか？">{csrf_field(token)}
     {checks or '<p class="muted small">参加予定の方はいません。</p>'}
     <div><button class="btn" {'disabled' if early else ''}>催行完了として付与</button></div></form>
-    <p class="small muted">{f'出発日（{slash(t["depart_date"])}）以降に実行できます。' if early else '不参加の方には付与されず、使ったマイルも戻りません（取消扱いにする場合は先に「取消」してください）。'}</p></section>
+    <p class="small muted">{f'出発日（{slash(t["depart_date"])}）以降に実行できます。' if early else '不参加の方には付与されず、使ったポイントも戻りません（取消扱いにする場合は先に「取消」してください）。'}</p></section>
 </div>
 <section class="card danger-zone"><h2>催行中止</h2><form method="post" action="{base}/cancel" style="display:grid;gap:.8rem" data-confirm="ツアーを中止します。元に戻せません。よろしいですか？">{csrf_field(token)}
-  <label class="check"><input type="checkbox" name="confirm" value="yes"> 全員の予約を取り消し、使ったマイルをお戻しする</label>
+  <label class="check"><input type="checkbox" name="confirm" value="yes"> 全員の予約を取り消し、使ったポイントをお戻しする</label>
   <div><button class="btn danger">ツアーを中止する</button></div></form></section>"""
 
 
@@ -433,7 +433,7 @@ def staff_list(conn, me, token):
                     f'<td>{badge("st-booked", "有効") if s["active"] else badge("st-cancelled", "停止中")}</td><td class="nowrap">{slash(s["created_on"])}</td>'
                     f'<td class="r nowrap">{reset} {toggle}</td></tr>')
     return f"""{head("スタッフ管理")}
-<section class="card"><p class="small muted">操作の記録（マイル履歴の「担当」）には、ログインしたスタッフの氏名が残ります。退職した人のアカウントは「停止する」にしてください。</p>
+<section class="card"><p class="small muted">操作の記録（ポイント履歴の「担当」）には、ログインしたスタッフの氏名が残ります。退職した人のアカウントは「停止する」にしてください。</p>
 <div class="tablewrap"><table class="t"><thead><tr><th>ログインID</th><th>氏名</th><th>権限</th><th>状態</th><th>作成日</th><th></th></tr></thead><tbody>{"".join(rows)}</tbody></table></div></section>
 <section class="card"><h2>スタッフを追加する</h2><form method="post" action="/admin/staff" class="form-grid">{csrf_field(token)}
   <label class="field"><span>ログインID</span><input class="input mono" name="login" required autocapitalize="none" placeholder="例: suzuki"><small>半角英数字</small></label>
@@ -450,14 +450,14 @@ def settings_page(conn, token):
 <p class="small muted">新しく道ツアーを登録するときの初期値です。登録済みのツアーには影響しません。仕様が決まるまでの仮の値です。</p>
 <form method="post" action="/admin/settings" class="form-grid">{csrf_field(token)}
   <label class="field"><span>招待条件（直近1年の通常ツアー参加回数）</span><input class="input num" name="michi_min_tours" value="{md['min_tours']}" inputmode="numeric" required></label>
-  <label class="field"><span>道ツアー参加の特典マイル</span><input class="input num" name="michi_bonus" value="{md['bonus']}" inputmode="numeric" required></label>
+  <label class="field"><span>道ツアー参加の特典ポイント</span><input class="input num" name="michi_bonus" value="{md['bonus']}" inputmode="numeric" required></label>
   <div class="form-actions full"><button class="btn">保存する</button></div></form></section>
-<section class="card" style="max-width:760px"><h2>マイレージ制度の数値</h2>
+<section class="card" style="max-width:760px"><h2>ポイント制度の数値</h2>
 <p class="small muted">付与率・ステイタス・有効期限は、会員規約と一緒に変える必要があるため画面からは変えられません。points/rules.py を直してください。</p>
-<dl class="kv"><dt>ツアー参加</dt><dd>{rules.YEN_PER_POINT}円ごとに1マイル × ステイタス倍率</dd><dt>入会特典</dt><dd>{rules.WELCOME_BONUS}マイル</dd>
-<dt>誕生月特典</dt><dd>{rules.BIRTHDAY_BONUS}マイル</dd><dt>ご紹介特典</dt><dd>{rules.REFERRAL_BONUS}マイル</dd>
+<dl class="kv"><dt>ツアー参加</dt><dd>{rules.YEN_PER_POINT}円ごとに1pt × ステイタス倍率</dd><dt>入会特典</dt><dd>{rules.WELCOME_BONUS}pt</dd>
+<dt>誕生月特典</dt><dd>{rules.BIRTHDAY_BONUS}pt</dd><dt>ご紹介特典</dt><dd>{rules.REFERRAL_BONUS}pt</dd>
 <dt>ステイタス</dt><dd>{"／".join(f"{n} {need}回〜 {mult:g}倍" for _, n, need, mult in rules.RANKS)}</dd>
-<dt>利用単位</dt><dd>{rules.REDEEM_UNIT}マイル</dd><dt>有効期限</dt><dd>付与日から{rules.EXPIRY_YEARS}年後の月末</dd></dl></section>"""
+<dt>利用単位</dt><dd>{rules.REDEEM_UNIT}pt</dd><dt>有効期限</dt><dd>付与日から{rules.EXPIRY_YEARS}年後の月末</dd></dl></section>"""
 
 
 def password_page(token):
@@ -474,24 +474,23 @@ def rules_page():
     rank_rows = "".join(f"<tr><th>{e(name)}</th><td>{'ご入会時' if not need else f'直近1年で{need}回以上ご参加'}</td><td class='v'>{mult:g}倍</td></tr>"
                         for _, name, need, mult in rules.RANKS)
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0a3d8f"><title>マイレージ制度のご案内</title><link rel="stylesheet" href="/static/ui.css">
+<meta name="theme-color" content="#0a3d8f"><title>ポイント制度のご案内</title><link rel="stylesheet" href="/static/ui.css">
 <style>main{{max-width:860px;margin:0 auto;padding:1rem 16px 3rem;display:grid;gap:1rem}}.box{{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem;display:grid;gap:.8rem}}
 table.list{{width:100%;border-collapse:collapse;font-size:var(--t-sm)}}table.list th,table.list td{{border:1px solid var(--line);padding:.55rem .7rem;text-align:left}}table.list th{{background:var(--surface-2);white-space:nowrap}}
 ul{{margin:0;padding-left:1.2rem;display:grid;gap:.3rem}}header{{background:var(--bar);color:var(--on-bar);padding:.7rem 16px;font-weight:700}}header a{{color:inherit;text-decoration:none}}</style></head>
 <body><header><a href="/app/">バスツアー会員</a></header><main>
-<section class="box"><h1>マイレージ制度のご案内</h1>
+<section class="box"><h1>ポイント制度のご案内</h1>
 <h2 class="h-bar">ためる</h2><ul>
-<li>ご入会で <b>{rules.WELCOME_BONUS}マイル</b></li>
-<li>ツアーにご参加いただくと、お支払額（マイル利用分を除く税込代金）<b>{rules.YEN_PER_POINT}円ごとに1マイル</b> × ステイタスの倍率。ツアー終了後に付与します。</li>
-<li>お誕生月に出発するツアーにご参加で <b>{rules.BIRTHDAY_BONUS}マイル</b></li>
-<li>ご紹介した方が初めてツアーに参加されると、ご紹介者に <b>{rules.REFERRAL_BONUS}マイル</b></li>
-<li>対象ツアーでは、キャンペーンによるマイルの倍増・加算があります</li></ul>
+<li>ご入会で <b>{rules.WELCOME_BONUS}ポイント</b></li>
+<li>ツアーにご参加いただくと、お支払額（ポイント利用分を除く税込代金）<b>{rules.YEN_PER_POINT}円ごとに1ポイント</b> × ステイタスの倍率。ツアー終了後に付与します。</li>
+<li>お誕生月に出発するツアーにご参加で <b>{rules.BIRTHDAY_BONUS}ポイント</b></li>
+<li>ご紹介した方が初めてツアーに参加されると、ご紹介者に <b>{rules.REFERRAL_BONUS}ポイント</b></li>
+<li>対象ツアーでは、キャンペーンによるポイントの倍増・加算があります</li></ul>
 <h2 class="h-bar">ステイタス</h2>
-<table class="list"><tr><th>ステイタス</th><th>条件</th><th>マイル倍率</th></tr>{rank_rows}</table>
+<table class="list"><tr><th>ステイタス</th><th>条件</th><th>ポイント倍率</th></tr>{rank_rows}</table>
 <p class="small muted">ステイタスはツアー出発日より前の1年間の参加回数で、自動で決まります。</p>
-<h2 class="h-bar">つかう</h2><ul><li>{rules.REDEEM_UNIT}マイル単位で、1マイル＝1円としてツアー代金にお使いいただけます。</li>
-<li>予約を取り消した場合、使ったマイルは元の有効期限のままお戻しします。</li></ul>
-<h2 class="h-bar">有効期限</h2><ul><li>付与日から{rules.EXPIRY_YEARS}年後の月末まで有効です。期限の近いマイルから使われます。</li>
-<li>退会された場合、保有マイルはすべて失効します。換金・譲渡はできません。</li></ul>
-<p class="small muted">「マイル」は当社のバスツアー会員制度のマイルです。航空会社のマイルとは交換できません。</p>
+<h2 class="h-bar">つかう</h2><ul><li>{rules.REDEEM_UNIT}ポイント単位で、1ポイント＝1円としてツアー代金にお使いいただけます。</li>
+<li>予約を取り消した場合、使ったポイントは元の有効期限のままお戻しします。</li></ul>
+<h2 class="h-bar">有効期限</h2><ul><li>付与日から{rules.EXPIRY_YEARS}年後の月末まで有効です。期限の近いポイントから使われます。</li>
+<li>退会された場合、保有ポイントはすべて失効します。換金・譲渡はできません。</li></ul>
 </section></main></body></html>"""

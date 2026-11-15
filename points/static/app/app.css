@@ -37,10 +37,8 @@ form.stack{display:grid;gap:.8rem}
 .cardbtn{font:inherit;font-size:var(--t-xs);font-weight:700;display:flex;align-items:center;gap:.3rem;padding:.3rem .75rem;border:1px solid rgba(255,255,255,.55);border-radius:999px;background:transparent;color:inherit;cursor:pointer}
 .cardbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
 
-/* ホーム：紺の帯の上に会員カード、その下に保有マイルの板を重ねる */
-.hero{background:var(--bar);color:var(--on-bar);margin:0 -16px;padding:.4rem 16px 4.2rem;display:grid;gap:.6rem;justify-items:center}
-.hero .hello{justify-self:start;font-size:var(--t-lg);font-weight:700}
-.hero .hint{font-size:var(--t-xs);opacity:.8;text-align:center}
+/* ホーム：紺の帯の上に会員カード、その下に保有ポイントの板を重ねる */
+.hero{background:var(--bar);color:var(--on-bar);margin:0 -16px;padding:1rem 16px 4.4rem;display:grid;gap:.6rem;justify-items:center}
 .pull{margin-top:-3.4rem;display:grid;gap:1rem;position:relative}
 
 /* 会員カード：ステイタスで色が変わる（実物のカードの見立て） */
@@ -60,36 +58,24 @@ form.stack{display:grid;gap:.8rem}
 .mcard.big{max-width:420px;cursor:default}
 .mcard.big .mc-no{font-size:1.65rem}
 
-/* 保有マイル */
+/* 保有ポイント */
 .miles{gap:.35rem;text-align:center;padding-top:1.2rem}
 .mi-label{font-size:var(--t-sm);color:var(--ink-2);font-weight:700}
 .mi-num{display:flex;justify-content:center;align-items:baseline;gap:.35rem;color:var(--accent)}
 .mi-num b{font-size:3rem;line-height:1.1;letter-spacing:.01em}
 .mi-num span{font-weight:700;font-size:var(--t-md)}
-.mi-sub{font-size:var(--t-sm);color:var(--ink-2)}
 .miles .notice{margin-top:.3rem}
 .mi-facts{display:grid;grid-template-columns:repeat(3,1fr);margin:.6rem -1.2rem -1.1rem;border-top:1px solid var(--line)}
 .mi-facts div{padding:.65rem .3rem;border-left:1px solid var(--line)}
 .mi-facts div:first-child{border-left:0}
-.mi-facts dt{font-size:.75rem;color:var(--ink-2)}
+.mi-facts dt{color:var(--brand);display:flex;justify-content:center}
+.mi-facts dt svg{width:22px;height:22px}
 .mi-facts dd{margin:0;font-weight:700;font-size:var(--t-sm);font-variant-numeric:tabular-nums}
 
 /* よく使う機能 */
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
 .tiles > *{font:inherit;display:grid;justify-items:center;gap:.3rem;padding:.75rem .2rem;border:0;border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);color:var(--ink);text-decoration:none;font-size:.75rem;font-weight:700;cursor:pointer}
 .tiles svg{width:30px;height:30px;padding:5px;border-radius:50%;background:var(--sky-soft);color:var(--brand);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;box-sizing:content-box}
-
-/* ステイタス */
-.st-next{font-size:var(--t-sm)}
-.st-next .big{font-size:1.6rem;color:var(--accent);margin:0 .1rem}
-.bar{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
-.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--brand))}
-.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;text-align:center}
-.steps li{display:grid;padding:.4rem .2rem;border-radius:var(--radius-sm);background:var(--surface-2);font-size:.75rem;color:var(--ink-2)}
-.steps li b{font-size:var(--t-sm);color:var(--ink)}
-.steps li.done{background:var(--sky-soft)}
-.steps li.here{background:var(--brand);color:var(--on-brand)}
-.steps li.here b{color:var(--on-brand)}
 
 /* 搭乗券風の「次のツアー」 */
 .pass{display:grid;grid-template-columns:5.6rem 1fr;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
@@ -120,20 +106,6 @@ form.stack{display:grid;gap:.8rem}
 .goal .dots{display:flex;gap:.35rem}
 .goal .dots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--gold)}
 .goal .dots i.on{background:var(--gold)}
-
-/* マイル明細 */
-.stmt{list-style:none;margin:0;padding:0}
-.stmt .month{font-size:var(--t-xs);font-weight:700;color:var(--ink-2);padding:.8rem 0 .3rem;border-bottom:1px solid var(--line)}
-.stmt .month:first-child{padding-top:0}
-.stmt .row{display:grid;grid-template-columns:3.6rem 1fr auto;gap:.6rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--line)}
-.stmt .row:last-child{border-bottom:0}
-.r-date{font-size:var(--t-xs);color:var(--ink-2);font-variant-numeric:tabular-nums}
-.r-what{font-size:var(--t-sm);min-width:0;overflow-wrap:anywhere}
-.r-what small{display:block;font-size:.75rem;color:var(--ink-2)}
-.r-pt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.sum dl{display:grid;grid-template-columns:repeat(3,1fr);margin:0;text-align:center}
-.sum dt{font-size:.75rem;color:var(--ink-2)} .sum dd{margin:0;font-weight:700;font-size:var(--t-lg);font-variant-numeric:tabular-nums}
-.sum dd.accent{color:var(--accent)}
 
 /* 受付で見せる会員証（全画面） */
 #cardview{border:0;padding:0;margin:0;width:100vw;max-width:none;height:100dvh;max-height:none;background:var(--bar);color:var(--on-bar)}
@@ -187,3 +159,113 @@ form.stack{display:grid;gap:.8rem}
   .pull{grid-template-columns:1fr}
   .tiles > *{padding:1rem .2rem;font-size:var(--t-sm)}
 }
+
+/* アイコン（共通） */
+.card svg,.invite svg,.offline svg,.notice svg,.empty svg,.pass svg,.cv svg,.mc-tap svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.offline,.notice{display:flex;align-items:center;gap:.5rem}
+.offline svg,.notice svg{width:20px;height:20px}
+.empty{display:flex;align-items:center;gap:.6rem;color:var(--ink-2);font-size:var(--t-sm);padding:.4rem 0}
+.empty svg{width:28px;height:28px;padding:6px;border-radius:50%;background:var(--surface-2);box-sizing:content-box}
+.mc-tap svg{width:18px;height:18px;opacity:.8}
+
+/* 「？」を押すと出る説明 */
+.help{position:relative}
+.help summary{list-style:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700;cursor:pointer;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.help summary::-webkit-details-marker{display:none}
+.help[open] summary{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.help p{position:absolute;right:0;top:30px;z-index:3;width:min(300px,78vw);padding:.7rem .85rem;border-radius:var(--radius-sm);background:var(--ink);color:var(--surface);font-size:var(--t-sm);line-height:1.7;font-weight:400;text-align:left;box-shadow:var(--shadow)}
+.mi-yen{display:flex;align-items:center;justify-content:center;gap:.35rem;color:var(--ink-2);font-size:var(--t-sm);font-weight:700}
+.mi-yen svg{width:20px;height:20px;color:var(--sky)}
+.mi-yen .help p{right:auto;left:50%;transform:translateX(-50%)}
+
+/* ステイタス：輪のグラフ */
+.ring-wrap{display:grid;grid-template-columns:132px 1fr;gap:1rem;align-items:center}
+.ring{width:132px;height:132px}
+.ring text{font-family:var(--font-ui);stroke:none}
+.ring-bg{fill:none;stroke:var(--surface-2);stroke-width:10}
+.ring-fg{fill:none;stroke:var(--sky);stroke-width:10;stroke-linecap:round}
+.ring-fg.st-silver{stroke:#8d99a8}.ring-fg.st-gold{stroke:#c39a3c}
+.ring-num{font-size:26px;font-weight:700;text-anchor:middle;fill:var(--accent)}
+.ring-unit{font-size:11px;font-weight:700;fill:var(--ink-2)}
+.ring-sub{font-size:9px;font-weight:400;text-anchor:middle;fill:var(--ink-2)}
+.ring-next{display:flex;align-items:center;gap:.35rem;font-size:var(--t-sm)}
+.ring-next svg{width:22px;height:22px;color:var(--brand)}
+.ring-left{font-size:var(--t-sm);margin-bottom:.4rem}
+.ring-left b{font-size:1.9rem;color:var(--accent);margin:0 .15rem}
+.medals{list-style:none;margin:0;padding:0;display:flex;gap:.6rem}
+.medals li{display:grid;justify-items:center;font-size:.7rem;color:var(--ink-2);opacity:.55}
+.medals li.got{opacity:1}
+.medals li.here span{color:var(--ink);font-weight:700}
+.medals i{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
+.m-regular i{background:linear-gradient(135deg,#1d6fd1,#0a3d8f)}
+.m-silver i{background:linear-gradient(135deg,#d9dee5,#7d8996)}
+.m-gold i{background:linear-gradient(135deg,#e9cf86,#a87f25)}
+.medals li.here i{outline:2px solid var(--sky);outline-offset:2px}
+
+/* 道ツアーの招待まで：バスのアイコンを並べる */
+.buses{display:flex;gap:.5rem}
+.buses i{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:2px dashed var(--gold);color:var(--gold);opacity:.6}
+.buses i.on{background:var(--gold);border-style:solid;color:#fff;opacity:1}
+.buses svg{width:22px;height:22px}
+.goal-left{font-size:var(--t-sm)} .goal-left b{font-size:1.5rem;color:var(--gold);margin:0 .1rem}
+
+/* 招待（道ツアー） */
+.inv-kicker{display:flex;align-items:center;gap:.3rem;margin-right:auto}
+.inv-kicker svg{width:20px;height:20px}
+.inv-facts{display:flex;flex-wrap:wrap;gap:.4rem .9rem;font-weight:700;font-size:var(--t-sm)}
+.inv-facts span{display:flex;align-items:center;gap:.3rem}
+.inv-facts svg{width:18px;height:18px;color:#8a6414}
+.invite .state{display:flex;align-items:center;gap:.5rem}
+.invite .state svg{width:20px;height:20px}
+.invite .help summary{background:rgba(255,255,255,.6);border-color:#d9b85f;color:#8a6414}
+
+/* 搭乗券の数字 */
+.p-rows span{display:flex;align-items:center;gap:.25rem;font-weight:700;font-size:var(--t-sm);white-space:nowrap}
+.p-rows svg{width:16px;height:16px;color:var(--ink-2)}
+.p-rows .plus svg{color:var(--plus)}
+
+/* ポイント明細：種類ごとのアイコン */
+.stmt{list-style:none;margin:0;padding:0}
+.stmt .month{font-size:var(--t-xs);font-weight:700;color:var(--ink-2);padding:.8rem 0 .3rem;border-bottom:1px solid var(--line)}
+.stmt .month:first-child{padding-top:0}
+.stmt .row{display:grid;grid-template-columns:auto 1fr auto;gap:.7rem;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--line)}
+.stmt .row:last-child{border-bottom:0}
+.r-ico{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--sky-soft);color:var(--brand)}
+.r-ico svg{width:20px;height:20px}
+.r-ico.k-bonus{background:var(--gold-soft);color:var(--gold)}
+.r-ico.k-redeem,.r-ico.k-expire,.r-ico.k-forfeit,.r-ico.k-off{background:var(--surface-2);color:var(--ink-2)}
+.r-what{font-size:var(--t-sm);min-width:0;overflow-wrap:anywhere;font-weight:700}
+.r-what small{display:block;font-size:.75rem;color:var(--ink-2);font-weight:400}
+.r-pt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:var(--t-md)}
+
+/* 履歴の合計：獲得のうち使った分を帯で見せる */
+.sum{gap:.6rem}
+.sum-main{display:flex;align-items:baseline;justify-content:center;gap:.35rem;color:var(--ink-2);font-size:var(--t-sm)}
+.sum-main b{font-size:2.4rem;color:var(--accent)}
+.sum-bar{position:relative;height:12px;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--brand));overflow:hidden}
+.sum-bar .used{position:absolute;right:0;top:0;bottom:0;background:var(--line);border-left:2px solid var(--surface)}
+.sum dl{display:flex;justify-content:space-between;margin:0}
+.sum dt{display:flex;align-items:center;gap:.3rem;font-size:var(--t-xs);color:var(--ink-2)}
+.sum dt svg{width:16px;height:16px}
+.sum dd{margin:0;font-weight:700;font-size:var(--t-lg);font-variant-numeric:tabular-nums}
+.sum dl div:last-child{text-align:right}
+.sum dl div:last-child dt{justify-content:flex-end}
+
+/* ため方：アイコンのタイル */
+.earn{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.earn li{display:grid;justify-items:center;gap:.15rem;padding:.75rem .3rem;border-radius:var(--radius-sm);background:var(--surface-2);text-align:center}
+.earn svg{width:30px;height:30px;color:var(--brand)}
+.earn span{font-size:var(--t-xs);color:var(--ink-2)}
+.earn b{font-size:var(--t-lg);color:var(--accent)}
+.exp{list-style:none;margin:0;padding:0}
+.exp li{display:flex;align-items:center;gap:.6rem;padding:.5rem 0;border-bottom:1px solid var(--line);font-size:var(--t-sm)}
+.exp li:last-child{border-bottom:0}
+.exp svg{width:18px;height:18px;color:var(--ink-2)}
+.exp b{margin-left:auto;font-variant-numeric:tabular-nums}
+.install h2{display:flex;align-items:center;gap:.4rem}
+.install h2 svg{width:22px;height:22px;color:var(--brand)}
+.cv-note{display:flex;align-items:center;gap:.4rem}
+.cv-note svg{width:20px;height:20px}
+.login .lg-mark{justify-self:start;margin-top:1.2rem;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14)}
+.login .lg-mark svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.8}
+.login h1{margin-top:.6rem}

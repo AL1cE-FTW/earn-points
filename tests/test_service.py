@@ -50,7 +50,7 @@ class ServiceTest(unittest.TestCase):
         m = self.member(birthdate="1960-12-01")
         t = self.join(m, "A", "2026-03-01", price=12800, points=300)
         n = service.complete_tour(self.conn, t["id"], D("2026-03-01"))
-        self.assertEqual(n, (12800 - 300) // 100)  # 125マイル
+        self.assertEqual(n, (12800 - 300) // 100)  # 125pt
         self.assertEqual(self.bal(m), rules.WELCOME_BONUS - 300 + 125)
 
     def test_cannot_complete_before_departure(self):
@@ -113,7 +113,7 @@ class ServiceTest(unittest.TestCase):
             service.book_tour(self.conn, m["member_no"], t["id"], 1100, D("2026-04-01"))
 
     def test_fifo_consumption_and_restore_on_cancel(self):
-        m = self.member(today="2025-01-10")              # 300マイル 期限 2027-01-31
+        m = self.member(today="2025-01-10")              # 300pt 期限 2027-01-31
         service.adjust_points(self.conn, m["member_no"], 500, "付与", D("2026-01-10"))  # 期限 2028-01-31
         t = self.tour("Y", "2026-12-01")
         b = service.book_tour(self.conn, m["member_no"], t["id"], 400, D("2026-06-01"))

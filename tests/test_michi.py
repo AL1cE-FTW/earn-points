@@ -69,7 +69,7 @@ class MichiTest(unittest.TestCase):
         before = service.balance(self.conn, self.regular["id"], D("2026-08-01"))
         service.complete_tour(self.conn, self.michi["id"], D("2026-08-01"))
         gained = service.balance(self.conn, self.regular["id"], D("2026-08-01")) - before
-        # 基本 898マイル × シルバー1.5倍 = 1347マイル ＋ 道ツアー特典 1000マイル
+        # 基本 898pt × シルバー1.5倍 = 1347pt ＋ 道ツアー特典 1000pt
         self.assertEqual(gained, 1347 + 1000)
         reasons = [r["reason"] for r in service.history(self.conn, self.regular["id"])]
         self.assertIn("ツアー参加 道ツアー特典", reasons)

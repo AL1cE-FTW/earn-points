@@ -1,4 +1,4 @@
-"""マイレージ制度の業務ロジック（入会・付与・利用・取消・失効・退会、道ツアーの招待、スタッフ）。"""
+"""ポイント制度の業務ロジック（入会・付与・利用・取消・失効・退会、道ツアーの招待、スタッフ）。"""
 
 import calendar
 import hashlib
@@ -144,7 +144,7 @@ def search_members(conn, query, limit=50):
 
 
 def withdraw_member(conn, member_no, today, operator=""):
-    """退会。保有マイルはすべて失効する。"""
+    """退会。保有ポイントはすべて失効する。"""
     with transaction(conn):
         m = get_member(conn, member_no)
         if m["status"] != "active":
@@ -193,7 +193,7 @@ def balance(conn, member_id, today):
 
 
 def expiring_schedule(conn, member_id, today):
-    """有効期限ごとの残マイル（期限が近い順）。"""
+    """有効期限ごとの残ポイント（期限が近い順）。"""
     return conn.execute(
         "SELECT expires_on, SUM(remaining) AS points FROM point_lots"
         " WHERE member_id=? AND expires_on >= ? AND remaining > 0"
@@ -231,7 +231,7 @@ def _consume(conn, member_id, kind, points, reason, today, booking_id=None, oper
     if points <= 0:
         return None
     if balance(conn, member_id, today) < points:
-        raise PointError("マイル残高が不足しています")
+        raise PointError("ポイント残高が不足しています")
     txn_id = _add_txn(conn, member_id, kind, -points, reason, today, booking_id, operator)
     left = points
     lots = conn.execute(
@@ -254,11 +254,11 @@ def adjust_points(conn, member_no, points, reason, today, operator=""):
     if not reason:
         raise PointError("調整理由を入力してください")
     if points == 0:
-        raise PointError("調整マイルを入力してください")
+        raise PointError("調整ポイントを入力してください")
     with transaction(conn):
         m = get_member(conn, member_no)
         if m["status"] != "active":
-            raise PointError("退会済み会員のマイルは調整できません")
+            raise PointError("退会済み会員のポイントは調整できません")
         if points > 0:
             _grant(conn, m["id"], "adjust", points, reason, today, operator=operator)
         else:
@@ -266,7 +266,7 @@ def adjust_points(conn, member_no, points, reason, today, operator=""):
 
 
 def expire_points(conn, today):
-    """有効期限を過ぎたマイルを失効させ、台帳に記録する。失効マイル合計を返す。"""
+    """有効期限を過ぎたポイントを失効させ、台帳に記録する。失効ポイント合計を返す。"""
     total = 0
     with transaction(conn):
         lots = conn.execute(
@@ -313,7 +313,7 @@ def create_tour(conn, code, name, depart_date, price, bonus_multiplier=1.0, bonu
     if price <= 0:
         raise PointError("代金は1円以上で入力してください")
     if bonus_multiplier < 1 or bonus_points < 0:
-        raise PointError("キャンペーン倍率は1以上、加算マイルは0以上で入力してください")
+        raise PointError("キャンペーン倍率は1以上、加算ポイントは0以上で入力してください")
     if conn.execute("SELECT 1 FROM tours WHERE code=?", (code,)).fetchone():
         raise PointError("同じツアーコードがすでに登録されています")
     try:
@@ -360,7 +360,7 @@ def max_redeemable(conn, member_id, price, today):
 
 
 def book_tour(conn, member_no, tour_id, points_to_use, today, operator=""):
-    """ツアー予約を登録し、指定があればマイルを代金に充当する。"""
+    """ツアー予約を登録し、指定があればポイントを代金に充当する。"""
     with transaction(conn):
         m = get_member(conn, member_no)
         if m["status"] != "active":
@@ -374,9 +374,9 @@ def book_tour(conn, member_no, tour_id, points_to_use, today, operator=""):
                         " AND status!='cancelled'", (m["id"], tour_id)).fetchone():
             raise PointError("この会員はすでにこのツアーを予約しています")
         if points_to_use < 0 or points_to_use % rules.REDEEM_UNIT:
-            raise PointError(f"マイルは{rules.REDEEM_UNIT}マイル単位でご利用いただけます")
+            raise PointError(f"ポイントは{rules.REDEEM_UNIT}ポイント単位でご利用いただけます")
         if points_to_use > max_redeemable(conn, m["id"], tour["price"], today):
-            raise PointError("利用マイルが残高またはツアー代金を超えています")
+            raise PointError("利用ポイントが残高またはツアー代金を超えています")
         cur = conn.execute(
             "INSERT INTO bookings (member_id, tour_id, price, points_used, booked_on)"
             " VALUES (?,?,?,?,?)",
@@ -389,14 +389,14 @@ def book_tour(conn, member_no, tour_id, points_to_use, today, operator=""):
 
 
 def _restore_points(conn, booking, today, operator):
-    """予約時に利用したマイルを元の付与分（元の有効期限）に戻す。"""
+    """予約時に利用したポイントを元の付与分（元の有効期限）に戻す。"""
     usages = conn.execute(
         "SELECT u.lot_id, u.points FROM lot_usages u JOIN point_txns p ON p.id=u.txn_id"
         " WHERE p.booking_id=? AND p.kind='redeem'", (booking["id"],)).fetchall()
     total = sum(u["points"] for u in usages)
     if not total:
         return
-    _add_txn(conn, booking["member_id"], "restore", total, "予約取消によるマイル返還",
+    _add_txn(conn, booking["member_id"], "restore", total, "予約取消によるポイント返還",
              today, booking["id"], operator)
     for u in usages:
         conn.execute("UPDATE point_lots SET remaining=remaining+? WHERE id=?",
@@ -415,7 +415,7 @@ def cancel_booking(conn, booking_id, today, operator=""):
 
 
 def cancel_tour(conn, tour_id, today, operator=""):
-    """催行中止。全予約を取り消し、利用マイルを返還する。"""
+    """催行中止。全予約を取り消し、利用ポイントを返還する。"""
     with transaction(conn):
         tour = get_tour(conn, tour_id)
         if tour["status"] != "scheduled":
@@ -428,7 +428,7 @@ def cancel_tour(conn, tour_id, today, operator=""):
 
 
 def estimate_earn(conn, member, tour, paid_amount):
-    """参加完了時に付与されるマイルの内訳を計算する。"""
+    """参加完了時に付与されるポイントの内訳を計算する。"""
     rank = rank_for(conn, member["id"], tour["depart_date"])
     base = paid_amount // rules.YEN_PER_POINT
     items = [("基本", math.floor(base * rank["multiplier"] * tour["bonus_multiplier"]))]
@@ -441,9 +441,9 @@ def estimate_earn(conn, member, tour, paid_amount):
 
 
 def complete_tour(conn, tour_id, today, operator="", absent_booking_ids=()):
-    """ツアー催行完了。参加者へマイルを付与する。
+    """ツアー催行完了。参加者へポイントを付与する。
 
-    absent_booking_ids に含めた予約は不参加（マイル付与なし・利用分は返還しない）。
+    absent_booking_ids に含めた予約は不参加（ポイント付与なし・利用分は返還しない）。
     """
     absent = set(absent_booking_ids)
     granted = 0
@@ -531,7 +531,7 @@ def update_michi_settings(conn, min_tours, bonus):
     if min_tours < 1:
         raise PointError("招待条件の参加回数は1以上にしてください")
     if bonus < 0:
-        raise PointError("特典マイルは0以上にしてください")
+        raise PointError("特典ポイントは0以上にしてください")
     set_setting(conn, "michi_min_tours", min_tours)
     set_setting(conn, "michi_bonus", bonus)
 
