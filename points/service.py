@@ -1,4 +1,4 @@
-"""ポイント制度の業務ロジック（入会・付与・利用・取消・失効・退会）。"""
+"""ポイント制度の業務ロジック（入会・付与・利用・取消・失効・退会、道ツアーの招待、スタッフ）。"""
 
 import calendar
 import hashlib
@@ -85,7 +85,10 @@ def register_member(conn, name, pin, today, kana="", phone="", email="",
         raise PointError("氏名は必須です")
     _validate_pin(pin)
     if birthdate:
-        birthdate = _iso(_date(birthdate))
+        try:
+            birthdate = _iso(_date(birthdate))
+        except ValueError:
+            raise PointError("生年月日を正しく入力してください")
     with transaction(conn):
         referrer_id = None
         if referrer_no:
@@ -128,7 +131,8 @@ def authenticate_member(conn, member_no, pin):
 def change_pin(conn, member_no, new_pin):
     _validate_pin(new_pin)
     m = get_member(conn, member_no)
-    conn.execute("UPDATE members SET pin_hash=? WHERE id=?", (hash_pin(new_pin), m["id"]))
+    conn.execute("UPDATE members SET pin_hash=?, session_gen=session_gen+1 WHERE id=?",
+                 (hash_pin(new_pin), m["id"]))
 
 
 def search_members(conn, query, limit=50):
@@ -286,8 +290,24 @@ def expire_points(conn, today):
 
 # --- ツアー・予約 ---------------------------------------------------------------
 
-def create_tour(conn, code, name, depart_date, price, bonus_multiplier=1.0, bonus_points=0):
+def create_tour(conn, code, name, depart_date, price, bonus_multiplier=1.0, bonus_points=None,
+                kind="normal", invite_min_tours=None):
+    """ツアーを登録する。kind="michi" は招待制の道ツアー。
+
+    道ツアーで invite_min_tours / bonus_points を省略（None）した場合は、設定の既定値を使う。
+    """
     code, name = (code or "").strip(), (name or "").strip()
+    if kind not in TOUR_KINDS:
+        raise PointError("ツアーの種類が正しくありません")
+    if kind == "michi":
+        d = michi_settings(conn)
+        invite_min_tours = d["min_tours"] if invite_min_tours is None else invite_min_tours
+        bonus_points = d["bonus"] if bonus_points is None else bonus_points
+        if not isinstance(invite_min_tours, int) or invite_min_tours < 1:
+            raise PointError("招待条件の参加回数は1以上の整数で入力してください")
+    else:
+        invite_min_tours = None
+        bonus_points = bonus_points or 0
     if not code or not name:
         raise PointError("ツアーコードとツアー名は必須です")
     if price <= 0:
@@ -296,10 +316,14 @@ def create_tour(conn, code, name, depart_date, price, bonus_multiplier=1.0, bonu
         raise PointError("キャンペーン倍率は1以上、加算ポイントは0以上で入力してください")
     if conn.execute("SELECT 1 FROM tours WHERE code=?", (code,)).fetchone():
         raise PointError("同じツアーコードがすでに登録されています")
+    try:
+        depart = _iso(_date(depart_date))
+    except ValueError:
+        raise PointError("出発日を正しく入力してください")
     cur = conn.execute(
-        "INSERT INTO tours (code, name, depart_date, price, bonus_multiplier, bonus_points)"
-        " VALUES (?,?,?,?,?,?)",
-        (code, name, _iso(_date(depart_date)), price, bonus_multiplier, bonus_points))
+        "INSERT INTO tours (code, name, depart_date, price, bonus_multiplier, bonus_points,"
+        " kind, invite_min_tours) VALUES (?,?,?,?,?,?,?,?)",
+        (code, name, depart, price, bonus_multiplier, bonus_points, kind, invite_min_tours))
     return get_tour(conn, cur.lastrowid)
 
 
@@ -344,6 +368,8 @@ def book_tour(conn, member_no, tour_id, points_to_use, today, operator=""):
         tour = get_tour(conn, tour_id)
         if tour["status"] != "scheduled":
             raise PointError("このツアーは予約を受け付けていません")
+        if tour["kind"] == "michi" and not invite_for(conn, tour_id, m["id"]):
+            raise PointError("道ツアーは招待された会員だけが予約できます。先に招待を送ってください")
         if conn.execute("SELECT 1 FROM bookings WHERE member_id=? AND tour_id=?"
                         " AND status!='cancelled'", (m["id"], tour_id)).fetchone():
             raise PointError("この会員はすでにこのツアーを予約しています")
@@ -407,7 +433,8 @@ def estimate_earn(conn, member, tour, paid_amount):
     base = paid_amount // rules.YEN_PER_POINT
     items = [("基本", math.floor(base * rank["multiplier"] * tour["bonus_multiplier"]))]
     if tour["bonus_points"]:
-        items.append(("キャンペーン加算", tour["bonus_points"]))
+        items.append(("道ツアー特典" if tour["kind"] == "michi" else "キャンペーン加算",
+                      tour["bonus_points"]))
     if member["birthdate"] and member["birthdate"][5:7] == tour["depart_date"][5:7]:
         items.append(("誕生月特典", rules.BIRTHDAY_BONUS))
     return rank, items
@@ -474,3 +501,214 @@ def dashboard(conn, today, horizon_days=90):
         "horizon_days": horizon_days,
         "scheduled_tours": q("SELECT COUNT(*) FROM tours WHERE status='scheduled'"),
     }
+
+
+# --- 設定 -----------------------------------------------------------------
+
+TOUR_KINDS = {"normal": "通常ツアー", "michi": "道ツアー"}
+CONTACT_CHANNELS = {"app": "会員ページ", "phone": "電話", "mail": "郵送"}
+
+# 管理者が画面から変えられる値（道ツアーの既定値）。仕様が決まるまでの仮の値
+MICHI_DEFAULTS = {"michi_min_tours": 3, "michi_bonus": 1000}
+MICHI_WINDOW_DAYS = 365
+
+
+def get_setting(conn, key, default=None):
+    row = conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+    return row[0] if row else default
+
+
+def set_setting(conn, key, value):
+    conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)", (key, str(value)))
+
+
+def michi_settings(conn):
+    return {"min_tours": int(get_setting(conn, "michi_min_tours", MICHI_DEFAULTS["michi_min_tours"])),
+            "bonus": int(get_setting(conn, "michi_bonus", MICHI_DEFAULTS["michi_bonus"]))}
+
+
+def update_michi_settings(conn, min_tours, bonus):
+    if min_tours < 1:
+        raise PointError("招待条件の参加回数は1以上にしてください")
+    if bonus < 0:
+        raise PointError("特典ポイントは0以上にしてください")
+    set_setting(conn, "michi_min_tours", min_tours)
+    set_setting(conn, "michi_bonus", bonus)
+
+
+# --- 道ツアー（招待制） ----------------------------------------------------------
+
+def normal_tours_in(conn, member_id, on_date):
+    """on_date までの直近1年に参加完了した通常ツアーの回数（招待条件の判定に使う）。"""
+    end = _date(on_date)
+    start = end - timedelta(days=MICHI_WINDOW_DAYS)
+    return conn.execute(
+        "SELECT COUNT(*) FROM bookings b JOIN tours t ON t.id=b.tour_id"
+        " WHERE b.member_id=? AND b.status='completed' AND t.kind='normal'"
+        " AND t.depart_date >= ? AND t.depart_date <= ?",
+        (member_id, _iso(start), _iso(end))).fetchone()[0]
+
+
+def invite_for(conn, tour_id, member_id):
+    return conn.execute("SELECT * FROM invites WHERE tour_id=? AND member_id=?",
+                        (tour_id, member_id)).fetchone()
+
+
+def eligible_for(conn, tour, today):
+    """招待条件を満たす有効会員 [(会員, 参加回数)]（回数の多い順）。"""
+    out = []
+    for m in conn.execute("SELECT * FROM members WHERE status='active' ORDER BY id").fetchall():
+        n = normal_tours_in(conn, m["id"], today)
+        if n >= tour["invite_min_tours"]:
+            out.append((m, n))
+    return sorted(out, key=lambda x: -x[1])
+
+
+def invite_contacts(conn, invite_id):
+    return [r["channel"] for r in conn.execute(
+        "SELECT channel FROM invite_contacts WHERE invite_id=? ORDER BY contacted_on, rowid",
+        (invite_id,))]
+
+
+def invite_state(conn, inv):
+    """招待の状態 {code, label}。code は none / invited / requested / booked。"""
+    if inv is None:
+        return {"code": "none", "label": "未招待"}
+    b = conn.execute("SELECT status FROM bookings WHERE tour_id=? AND member_id=?"
+                     " AND status!='cancelled'", (inv["tour_id"], inv["member_id"])).fetchone()
+    if b:
+        return {"code": "booked", "label": "参加済" if b["status"] == "completed" else "予約済"}
+    if inv["requested_on"]:
+        return {"code": "requested", "label": "参加希望"}
+    ch = "・".join(CONTACT_CHANNELS[c] for c in invite_contacts(conn, inv["id"]))
+    return {"code": "invited", "label": f"案内済（{ch}）" if ch else "招待済"}
+
+
+def invites_of(conn, tour_id):
+    return conn.execute("SELECT * FROM invites WHERE tour_id=? ORDER BY id", (tour_id,)).fetchall()
+
+
+def invite_summary(conn, tour, today):
+    invs = invites_of(conn, tour["id"])
+    states = [invite_state(conn, i)["code"] for i in invs]
+    return {"eligible": len(eligible_for(conn, tour, today)), "invited": len(invs),
+            "requested": states.count("requested"), "booked": states.count("booked")}
+
+
+def send_invites(conn, tour_id, today, operator=""):
+    """条件を満たし、まだ招待していない会員に招待を出す（会員ページに表示される）。人数を返す。"""
+    with transaction(conn):
+        t = get_tour(conn, tour_id)
+        if t["kind"] != "michi" or t["status"] != "scheduled":
+            raise PointError("催行予定の道ツアーのみ招待できます")
+        n = 0
+        for m, _ in eligible_for(conn, t, today):
+            if invite_for(conn, t["id"], m["id"]):
+                continue
+            cur = conn.execute("INSERT INTO invites (tour_id, member_id, invited_on, operator)"
+                               " VALUES (?,?,?,?)", (t["id"], m["id"], _iso(today), operator))
+            conn.execute("INSERT INTO invite_contacts (invite_id, channel, contacted_on, operator)"
+                         " VALUES (?,?,?,?)", (cur.lastrowid, "app", _iso(today), operator))
+            n += 1
+    return n
+
+
+def mark_contacted(conn, invite_id, channel, today, operator=""):
+    """電話・郵送で案内したことを記録する。"""
+    if channel not in CONTACT_CHANNELS:
+        raise PointError("案内の手段が正しくありません")
+    if not conn.execute("SELECT 1 FROM invites WHERE id=?", (invite_id,)).fetchone():
+        raise PointError("招待が見つかりません")
+    conn.execute("INSERT OR IGNORE INTO invite_contacts (invite_id, channel, contacted_on, operator)"
+                 " VALUES (?,?,?,?)", (invite_id, channel, _iso(today), operator))
+
+
+def request_join(conn, invite_id, member_id, today):
+    """会員ページから「参加を希望する」。本人あての招待のみ受け付ける。"""
+    inv = conn.execute("SELECT * FROM invites WHERE id=? AND member_id=?",
+                       (invite_id, member_id)).fetchone()
+    if inv is None:
+        raise PointError("招待が見つかりません")
+    if get_tour(conn, inv["tour_id"])["status"] != "scheduled":
+        raise PointError("このツアーの受付は終了しました")
+    if not inv["requested_on"]:
+        conn.execute("UPDATE invites SET requested_on=? WHERE id=?", (_iso(today), invite_id))
+
+
+def my_invites(conn, member_id, today):
+    """会員に届いている招待（催行予定で出発前のもの、出発日が近い順）。"""
+    return conn.execute(
+        "SELECT i.*, t.name AS tour_name, t.depart_date, t.price, t.bonus_points FROM invites i"
+        " JOIN tours t ON t.id=i.tour_id WHERE i.member_id=? AND t.status='scheduled'"
+        " AND t.depart_date >= ? ORDER BY t.depart_date", (member_id, _iso(today))).fetchall()
+
+
+def invite_goal(conn, member_id, today):
+    """まだ招待されていない会員に「あと何回で招待」を示すための目安。"""
+    row = conn.execute("SELECT MIN(invite_min_tours) FROM tours"
+                       " WHERE kind='michi' AND status='scheduled'").fetchone()
+    need = row[0] or michi_settings(conn)["min_tours"]
+    have = normal_tours_in(conn, member_id, today)
+    return {"need": need, "have": have, "left": max(0, need - have)}
+
+
+# --- スタッフ -----------------------------------------------------------------
+
+STAFF_ROLES = {"admin": "管理者", "staff": "スタッフ"}
+MIN_PASSWORD = 8
+
+
+def _validate_password(pw):
+    if len(pw or "") < MIN_PASSWORD:
+        raise PointError(f"パスワードは{MIN_PASSWORD}文字以上にしてください")
+
+
+def create_staff(conn, login, name, password, role, today):
+    login, name = (login or "").strip().lower(), (name or "").strip()
+    if not login or not login.replace("-", "").replace("_", "").replace(".", "").isalnum() or not login.isascii():
+        raise PointError("ログインIDは半角英数字（- _ . も可）で入力してください")
+    if not name:
+        raise PointError("氏名を入力してください")
+    if role not in STAFF_ROLES:
+        raise PointError("権限が正しくありません")
+    _validate_password(password)
+    if conn.execute("SELECT 1 FROM staff WHERE login=?", (login,)).fetchone():
+        raise PointError("同じログインIDがすでに使われています")
+    cur = conn.execute("INSERT INTO staff (login, name, password_hash, role, created_on)"
+                       " VALUES (?,?,?,?,?)", (login, name, hash_pin(password), role, _iso(today)))
+    return get_staff(conn, cur.lastrowid)
+
+
+def get_staff(conn, staff_id):
+    row = conn.execute("SELECT * FROM staff WHERE id=?", (staff_id,)).fetchone()
+    if row is None:
+        raise PointError("スタッフが見つかりません")
+    return row
+
+
+def list_staff(conn):
+    return conn.execute("SELECT * FROM staff ORDER BY active DESC, role, id").fetchall()
+
+
+def authenticate_staff(conn, login, password):
+    row = conn.execute("SELECT * FROM staff WHERE login=?", ((login or "").strip().lower(),)).fetchone()
+    if row is None or not row["active"] or not _verify_pin(password or "", row["password_hash"]):
+        return None
+    return row
+
+
+def set_staff_password(conn, staff_id, password):
+    """パスワードを変える。発行済みのログインはすべて無効になる。"""
+    _validate_password(password)
+    get_staff(conn, staff_id)
+    conn.execute("UPDATE staff SET password_hash=?, session_gen=session_gen+1 WHERE id=?",
+                 (hash_pin(password), staff_id))
+
+
+def set_staff_active(conn, staff_id, active):
+    s = get_staff(conn, staff_id)
+    if not active and s["role"] == "admin" and conn.execute(
+            "SELECT COUNT(*) FROM staff WHERE role='admin' AND active=1").fetchone()[0] <= 1:
+        raise PointError("有効な管理者が1人もいなくなるため、停止できません")
+    conn.execute("UPDATE staff SET active=?, session_gen=session_gen+1 WHERE id=?",
+                 (1 if active else 0, staff_id))

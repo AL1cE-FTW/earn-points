@@ -1,0 +1,6 @@
+# Caddy の設定例。points.example.jp を実際のドメインに置き換える。
+# Caddy がドメインの証明書（HTTPS）を自動で取得・更新する。
+points.example.jp {
+	reverse_proxy 127.0.0.1:8000
+	encode gzip
+}

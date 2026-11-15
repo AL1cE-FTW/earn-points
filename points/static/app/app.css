@@ -1,0 +1,124 @@
+/* 会員アプリ（PWA）。見た目は画面デモの会員画面（アプリ風）と同じ */
+/* Layout: スマホは1カラム＋下部タブ。PC（960px以上）は左に白いメニュー、右に本文 */
+html,body{min-height:100%}
+.app{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1fr}
+.content{min-width:0;display:flex;flex-direction:column}
+.appbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:.8rem;padding:.6rem 16px;padding-top:calc(.6rem + env(safe-area-inset-top,0px));background:var(--bar);color:var(--on-bar)}
+.brand{text-decoration:none;color:inherit;margin-right:auto;font-weight:700;font-size:1.05rem}
+main{width:100%;max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:1rem calc(84px + env(safe-area-inset-bottom,0px));display:grid;gap:1rem;align-content:start}
+.page-title h1{font-size:var(--t-xl)}
+.grid{display:grid;gap:1rem}
+.grid > *{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;display:grid;gap:.7rem;align-content:start;min-width:0}
+.card h2{font-size:var(--t-md);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:.5rem}
+.card h2 .link{margin-left:auto;font:inherit;font-size:var(--t-sm);font-weight:400;background:none;border:0;color:var(--link);cursor:pointer;padding:0;text-decoration:underline}
+.notice{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:var(--radius-sm);padding:.5rem .7rem;font-size:var(--t-sm)}
+table.plain{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+table.plain th,table.plain td{padding:.45rem .2rem;border-bottom:1px solid var(--line);text-align:left;font-weight:400}
+table.plain td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.linkbtn{justify-self:start;font:inherit;font-size:var(--t-sm);background:none;border:0;color:var(--link);cursor:pointer;padding:0;text-decoration:underline}
+.kv{display:grid;grid-template-columns:1fr auto;gap:.4rem 1rem;font-size:var(--t-sm);margin:0}
+.kv dt{color:var(--ink-2)} .kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+
+/* 招待（道ツアー） */
+.invite{border:2px solid var(--gold);border-radius:var(--radius);background:var(--surface);padding:1rem 1.1rem;display:grid;gap:.6rem}
+.invite h2{font-size:var(--t-lg);color:var(--gold)}
+.invite .tname{font-size:var(--t-lg);font-weight:700}
+.invite dl{display:grid;grid-template-columns:auto 1fr;gap:.3rem 1rem;margin:0;font-size:var(--t-sm)}
+.invite dt{color:var(--ink-2)} .invite dd{margin:0;font-weight:700}
+.invite .state{font-size:var(--t-sm);padding:.5rem .7rem;border-radius:var(--radius-sm);background:var(--brand-soft);border:1px solid var(--brand)}
+.invite .actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.goal .dots{display:flex;gap:.35rem}
+.goal .dots i{width:16px;height:16px;border:2px solid var(--gold);border-radius:2px}
+.goal .dots i.on{background:var(--gold)}
+.chip-proposal{font-size:var(--t-xs);font-weight:700;padding:0 .5rem;border-radius:var(--radius-sm);background:var(--warn-bg);color:var(--warn-ink);text-decoration:none;white-space:nowrap}
+
+/* 次のツアー */
+.next dl{display:grid;grid-template-columns:auto 1fr;gap:.3rem 1rem;margin:0;font-size:var(--t-sm)}
+.next dt{color:var(--ink-2)} .next dd{margin:0;font-weight:700}
+.next .tname{font-size:var(--t-lg);font-weight:700}
+
+/* 履歴：日付・内容・ポイントの表 */
+table.hist{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+table.hist th{background:var(--surface-2);font-size:var(--t-xs);color:var(--ink-2);text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--line)}
+table.hist td{padding:.55rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}
+table.hist .d{white-space:nowrap;color:var(--ink-2);font-size:var(--t-xs)}
+table.hist .p{text-align:right;white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums}
+table.hist .k{display:block;font-size:var(--t-xs);color:var(--ink-2)}
+
+/* ツアー一覧 */
+.trip{display:grid;gap:.15rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.trip:last-child{border-bottom:0}
+.trip .top{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:var(--t-sm)}
+.trip .name{font-weight:700;overflow-wrap:anywhere}
+.trip .facts{display:flex;flex-wrap:wrap;gap:.1rem 1rem;font-size:var(--t-sm);color:var(--ink-2)}
+.how{margin:0;padding-left:1.2rem;display:grid;gap:.3rem;font-size:var(--t-sm)}
+form.stack{display:grid;gap:.8rem}
+
+/* ログイン */
+.login{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.login main{max-width:460px;padding-bottom:3rem}
+.login h1{font-size:var(--t-xl)}
+
+/* メニュー（スマホ：下部タブ／PC：左の白いメニュー） */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line-strong);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar .tabs{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:62px}
+.navbtn{font:inherit;background:transparent;border:0;color:var(--ink-2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.75rem;font-weight:700}
+.navbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.navbtn[aria-current="page"]{color:var(--brand)}
+.tabbar .navbtn[aria-current="page"]{box-shadow:inset 0 3px 0 var(--brand)}
+.side{display:none}
+
+/* アプリ風：角丸・影・グラデーションの会員カード（このページだけ。共通のui.cssは業務画面のまま） */
+:root{--radius:14px;--radius-sm:10px}
+.appbar{background:var(--surface);color:var(--brand);box-shadow:0 1px 0 var(--line)}
+.card{border:0;border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);padding:1.1rem 1.2rem}
+.card h2{border-bottom:0;padding-bottom:0}
+.hero{--c1:#2a8c63;--c2:#14513a;position:relative;overflow:hidden;color:#fff;border-radius:20px;padding:1.1rem 1.3rem 1.2rem;display:grid;gap:.15rem;
+  background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 10px 24px rgba(20,81,58,.28)}
+.hero::after{content:"";position:absolute;right:-50px;top:-60px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.1)}
+.hero.rank-silver{--c1:#7d8a99;--c2:#3e4955;box-shadow:0 10px 24px rgba(62,73,85,.28)}
+.hero.rank-gold{--c1:#d4a53c;--c2:#8a5d12;box-shadow:0 10px 24px rgba(138,93,18,.3)}
+.hero .h-top{display:flex;justify-content:space-between;align-items:center;font-size:var(--t-xs);font-weight:700;opacity:.95}
+.hero .h-rank{background:rgba(255,255,255,.22);border-radius:999px;padding:.05rem .7rem}
+.hero .h-label{margin-top:.6rem;font-size:var(--t-xs);opacity:.85}
+.hero .h-pt{display:flex;align-items:baseline;gap:.3rem;line-height:1.1}
+.hero .h-pt b{font-size:2.9rem;letter-spacing:.01em}
+.hero .h-pt span{font-weight:700;font-size:var(--t-lg)}
+.hero .h-foot{display:flex;justify-content:space-between;gap:1rem;margin-top:.8rem;font-size:var(--t-sm)}
+.hero .h-foot .mono{letter-spacing:.08em}
+.hero-note{text-align:center;font-size:var(--t-xs);color:var(--ink-2);margin-top:.4rem}
+.chip-next{margin-top:.8rem;display:flex;align-items:center;gap:.6rem;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:.45rem 1rem;font-size:var(--t-sm);font-weight:700}
+.chip-next b{margin-left:auto;white-space:nowrap}
+.route{border:0;gap:6px;overflow:visible}
+.route .stop{border:0;border-radius:12px;background:var(--surface-2)}
+.route .stop.done{background:var(--brand-soft)}
+.tabbar{box-shadow:0 -4px 16px rgba(0,0,0,.06);border-top:0}
+.tabbar .navbtn[aria-current="page"]{box-shadow:none}
+.tabbar .navbtn svg{width:46px;height:28px;padding:3px 12px;border-radius:999px;box-sizing:border-box}
+.tabbar .navbtn[aria-current="page"] svg{background:var(--brand-soft)}
+
+@media (min-width:960px){
+  .app.signed{grid-template-columns:240px 1fr}
+  .side{display:flex;flex-direction:column;gap:1.2rem;position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--line);padding:1rem 0;overflow:auto}
+  .side .brand{padding:0 1rem;margin:0;color:var(--ink)}
+  .side nav{display:grid;border-top:1px solid var(--line)}
+  .side .navbtn{flex-direction:row;justify-content:flex-start;gap:.7rem;font-size:var(--t-sm);padding:.75rem 1rem;color:var(--ink);border-bottom:1px solid var(--line)}
+  .side .navbtn:hover{background:var(--surface-2)}
+  .side .navbtn[aria-current="page"]{background:var(--brand-soft);color:var(--brand);box-shadow:inset 4px 0 0 var(--brand)}
+  .side .who{margin-top:auto;padding:0 1rem;display:grid;font-size:var(--t-sm)}
+  .side .who span{color:var(--ink-2);font-size:var(--t-xs)}
+  .side .links{display:grid;gap:.2rem;font-size:var(--t-xs);padding:0 1rem}
+  .side .links button{color:var(--link);background:none;border:0;padding:0;font:inherit;text-align:left;cursor:pointer;text-decoration:underline}
+  .tabbar{display:none}
+  .app.signed .appbar .brand{visibility:hidden}
+  main{padding-inline:24px;padding-bottom:3rem}
+  .grid.two{grid-template-columns:1fr 1fr;align-items:start}
+  .grid.two-even{grid-template-columns:1fr 1fr;align-items:start}
+}
+
+/* サービス版で追加 */
+.offline{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:var(--radius-sm);padding:.5rem .8rem;font-size:var(--t-sm)}
+.install ol{margin:0;padding-left:1.3rem;display:grid;gap:.25rem;font-size:var(--t-sm)}
+.loading{padding:3rem 16px;text-align:center;color:var(--ink-2)}
+.side .links a{color:var(--link)}
