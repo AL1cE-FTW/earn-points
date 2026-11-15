@@ -6,7 +6,7 @@
 const MICHI_KEY = "bt-points-michi-v1";
 const MICHI = {
   DEFAULT_MIN_TOURS: 3,   // 仮：直近1年で通常ツアーに何回参加したら招待するか
-  DEFAULT_BONUS: 1000,    // 仮：道ツアー参加の特典ポイント
+  DEFAULT_BONUS: 1000,    // 仮：道ツアー参加の特典マイル
   WINDOW_DAYS: 365,
 };
 const TOUR_KIND = {normal:"通常ツアー", michi:"道ツアー"};
@@ -151,7 +151,7 @@ function seed(base){
   bookTour(taro.member_no, t1.id, 300, back(50), S);
   bookTour(ichiro.member_no, t1.id, 1000, back(50), S);
   completeTour(t1.id, back(30), S);
-  const t2 = createTour({code:"2026-KANI", name:"冬の味覚 カニ食べ放題ツアー（ポイント2倍）", depart_date:addDays(base, 40), price:15800, bonus_multiplier:2});
+  const t2 = createTour({code:"2026-KANI", name:"冬の味覚 カニ食べ放題ツアー（マイル2倍）", depart_date:addDays(base, 40), price:15800, bonus_multiplier:2});
   bookTour(hanako.member_no, t2.id, 500, base, S);
   bookTour(ichiro.member_no, t2.id, 0, base, S);
   createTour({code:"2026-HAKONE", name:"箱根 彫刻の森と芦ノ湖遊覧", depart_date:addDays(base, 18), price:9800, bonus_points:100});

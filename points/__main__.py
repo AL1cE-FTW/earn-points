@@ -1,7 +1,7 @@
 """コマンドライン入口。
 
   python -m points serve [--db FILE] [--host H] [--port P] [--https]   サーバを起動
-  python -m points expire [--db FILE]                     期限切れポイントを失効（毎日 cron などから実行）
+  python -m points expire [--db FILE]                     期限切れマイルを失効（毎日 cron などから実行）
   python -m points backup FILE [--db FILE]                動かしたままデータベースを FILE にバックアップ
   python -m points staff-password LOGIN [--db FILE]       スタッフのパスワードを再設定（管理者がログインできないとき用）
   python -m points demo [--db FILE]                       動作確認用のサンプルデータを投入
@@ -23,7 +23,7 @@ from .web import serve
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="python -m points", description="バスツアー会員ポイント制度（サービス版）")
+    p = argparse.ArgumentParser(prog="python -m points", description="バスツアー会員マイレージ制度（サービス版）")
     p.add_argument("command", choices=["serve", "expire", "backup", "staff-password", "demo"])
     p.add_argument("arg", nargs="?", help="backup の保存先 / staff-password のログインID")
     p.add_argument("--db", default=os.environ.get("POINTS_DB", "points.sqlite3"))
@@ -36,7 +36,7 @@ def main(argv=None):
         serve(a.db, a.host, a.port, os.environ.get("POINTS_ADMIN_PASSWORD"), secure_cookies=a.https)
     elif a.command == "expire":
         n = service.expire_points(connect(a.db), date.today())
-        print(f"{n}ポイントを失効させました")
+        print(f"{n}マイルを失効させました")
     elif a.command == "backup":
         if not a.arg:
             sys.exit("保存先のファイル名を指定してください（例: python -m points backup backup-2026-11-15.sqlite3）")
@@ -90,7 +90,7 @@ def seed_demo(conn, today=None):
     service.book_tour(conn, taro["member_no"], t1["id"], 300, back(50), S)
     service.book_tour(conn, ichiro["member_no"], t1["id"], 1000, back(50), S)
     service.complete_tour(conn, t1["id"], back(30), S)
-    t2 = service.create_tour(conn, "2026-KANI", "冬の味覚 カニ食べ放題ツアー（ポイント2倍）", today + timedelta(days=40), 15800, bonus_multiplier=2)
+    t2 = service.create_tour(conn, "2026-KANI", "冬の味覚 カニ食べ放題ツアー（マイル2倍）", today + timedelta(days=40), 15800, bonus_multiplier=2)
     service.book_tour(conn, hanako["member_no"], t2["id"], 500, today, S)
     service.book_tour(conn, ichiro["member_no"], t2["id"], 0, today, S)
     service.create_tour(conn, "2026-HAKONE", "箱根 彫刻の森と芦ノ湖遊覧", today + timedelta(days=18), 9800, bonus_points=100)

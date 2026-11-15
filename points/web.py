@@ -3,7 +3,7 @@
 - /admin/...  スタッフ画面（HTML）。スタッフは1人ずつアカウントでログインする
 - /app/       会員アプリ（PWA）。ホーム画面に追加するとアプリのように使える
 - /api/...    会員アプリが使う JSON API
-- /rules      ポイント制度のご案内（だれでも見られる）
+- /rules      マイレージ制度のご案内（だれでも見られる）
 
 Python 標準ライブラリの HTTP サーバだけで動き、外部サービス・CDN は読み込まない。
 インターネットに公開するときは、前に HTTPS のリバースプロキシ（Caddy など）を置く（docs/運用ガイド.md）。
@@ -251,7 +251,7 @@ class App:
             t = service.get_tour(self.conn, nxt["tour_id"])
             next_tour = {"name": t["name"], "depart_date": t["depart_date"], "pay": nxt["price"] - nxt["points_used"],
                          "points_used": nxt["points_used"], "gain": self._gain(m, t, nxt["price"] - nxt["points_used"]),
-                         "days": (date.fromisoformat(t["depart_date"]) - today).days}
+                         "days": (date.fromisoformat(t["depart_date"]) - today).days, "michi": t["kind"] == "michi"}
         invites = []
         for i in service.my_invites(self.conn, m["id"], today):
             invites.append({"id": i["id"], "tour_name": i["tour_name"], "depart_date": i["depart_date"],
@@ -355,7 +355,7 @@ class App:
             return page("ホーム", V.home(conn, today, q.get("q", "").strip(), token), "home")
         if path == "/admin/expire" and method == "POST":
             n = service.expire_points(conn, today)
-            return self.redirect("/admin", ("ok", f"失効処理を実行しました（{n:,}pt 失効）"))
+            return self.redirect("/admin", ("ok", f"失効処理を実行しました（{n:,}マイル 失効）"))
         if path == "/admin/password":
             if method == "POST":
                 if not service.authenticate_staff(conn, staff["login"], form.get("current", "")):
@@ -388,9 +388,9 @@ class App:
                 url = f"https://{host}/app/" if host else "/app/"
                 return page("会員証の印刷", V.member_card(conn, m, today, url), "home")
             if action == "adjust" and method == "POST":
-                pts = _int(form.get("points"), "調整ポイント")
+                pts = _int(form.get("points"), "調整マイル")
                 service.adjust_points(conn, m["member_no"], pts, form.get("reason", ""), today, op)
-                return self.redirect(base, ("ok", f"{pts:+,}pt 調整しました"))
+                return self.redirect(base, ("ok", f"{pts:+,}マイル 調整しました"))
             if action == "pin" and method == "POST":
                 service.change_pin(conn, m["member_no"], form.get("pin", ""))
                 return self.redirect(base, ("ok", "暗証番号を再設定しました"))
@@ -408,7 +408,7 @@ class App:
                 t = service.create_tour(
                     conn, form.get("code"), form.get("name"), form.get("depart_date", ""),
                     _int(form.get("price"), "代金"), _float(form.get("bonus_multiplier") or "1", "キャンペーン倍率"),
-                    _int(bonus_raw, "加算ポイント") if bonus_raw else None, kind=kind,
+                    _int(bonus_raw, "加算マイル") if bonus_raw else None, kind=kind,
                     invite_min_tours=_int(form.get("invite_min_tours"), "招待条件") if kind == "michi" else None)
                 return self.redirect(f"/admin/tours/{t['id']}", ("ok", "ツアーを登録しました"))
             return page("ツアー", V.tours(conn, token), "tours")
@@ -420,17 +420,17 @@ class App:
             if action == "" and method == "GET":
                 return page(t["name"], V.tour_detail(conn, t, today, q.get("check", "").strip(), token), "tours")
             if action == "book" and method == "POST":
-                service.book_tour(conn, form.get("member_no", ""), t["id"], _int(form.get("points") or "0", "利用ポイント"), today, op)
+                service.book_tour(conn, form.get("member_no", ""), t["id"], _int(form.get("points") or "0", "利用マイル"), today, op)
                 return self.redirect(base, ("ok", "予約を登録しました"))
             if action == "complete" and method == "POST":
                 absent = [_int(v, "予約番号") for v in form.get("absent_list", [])]
                 n = service.complete_tour(conn, t["id"], today, op, absent)
-                return self.redirect(base, ("ok", f"催行完了として {n:,}pt を付与しました"))
+                return self.redirect(base, ("ok", f"催行完了として {n:,}マイル を付与しました"))
             if action == "cancel" and method == "POST":
                 if form.get("confirm") != "yes":
                     raise PointError("確認のチェックを入れてください")
                 service.cancel_tour(conn, t["id"], today, op)
-                return self.redirect(base, ("ok", "ツアーを中止し、使ったポイントをお戻ししました"))
+                return self.redirect(base, ("ok", "ツアーを中止し、使ったマイルをお戻ししました"))
             if action == "invite" and method == "POST":
                 n = service.send_invites(conn, t["id"], today, op)
                 return self.redirect(base, ("ok", f"{n}名に招待を送りました（会員ページに表示されます）"))
@@ -441,7 +441,7 @@ class App:
         if path.startswith("/admin/bookings/") and path.endswith("/cancel") and method == "POST":
             service.cancel_booking(conn, _int(path.split("/")[3], "予約番号"), today, op)
             back = form.get("back", "")
-            return self.redirect(back if back.startswith("/admin") else "/admin", ("ok", "予約を取り消し、使ったポイントをお戻ししました"))
+            return self.redirect(back if back.startswith("/admin") else "/admin", ("ok", "予約を取り消し、使ったマイルをお戻ししました"))
 
         # 管理者だけ
         if path in ("/admin/staff", "/admin/settings") or path.startswith("/admin/staff/"):
@@ -465,7 +465,7 @@ class App:
                 return self.redirect("/admin/staff", ("ok", "変更しました"))
         if path == "/admin/settings":
             if method == "POST":
-                service.update_michi_settings(conn, _int(form.get("michi_min_tours"), "招待条件"), _int(form.get("michi_bonus"), "特典ポイント"))
+                service.update_michi_settings(conn, _int(form.get("michi_min_tours"), "招待条件"), _int(form.get("michi_bonus"), "特典マイル"))
                 return self.redirect("/admin/settings", ("ok", "保存しました"))
             return page("設定", V.settings_page(conn, token), "settings")
 

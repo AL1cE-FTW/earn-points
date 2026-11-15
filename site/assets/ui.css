@@ -1,6 +1,6 @@
-/* バスツアー会員ポイント 共通デザイン
-   方針：旅行会社の窓口で配る案内や業務画面に近い、飾りの少ない見た目にする。
-   白地＋ブランド色（緑）1色＋グレー。角丸は小さく、影・グラデーション・動きは使わない。
+/* バスツアー会員マイレージ 共通デザイン
+   方針：航空会社のマイレージ会員アプリのような、紺と空色の落ち着いた見た目にする。
+   白地＋ブランド色（紺）＋差し色（空色）＋グレー。角丸は小さく、影・グラデーション・動きは使わない。
    文字は大きめ（ご年配の会員も読みやすいように）。書体は端末のゴシック体だけを使う。 */
 :root{
   --bg:#f3f4f6;          /* ページの地 */
@@ -10,14 +10,15 @@
   --ink-2:#59616b;
   --line:#d4d8dd;
   --line-strong:#9aa3ad;
-  --brand:#1f6a4b;       /* ブランド色（ヘッダー・ボタン・見出しの線） */
-  --brand-dark:#174f38;
-  --brand-soft:#e7f1ec;
+  --brand:#0a3d8f;       /* ブランド色・紺（ヘッダー・ボタン・見出しの線） */
+  --brand-dark:#072c6b;
+  --brand-soft:#e7eefa;
   --on-brand:#ffffff;
-  --bar:#1f6a4b; --on-bar:#ffffff;   /* ヘッダーの帯 */
-  --link:#185fa8;
-  --accent:#b4561b;      /* ポイント数の強調にだけ使う */
-  --plus:#1f6a4b; --minus:#b42318;
+  --sky:#2b9de0; --sky-soft:#e4f3fc;  /* 差し色・空色（進み具合・強調の線） */
+  --bar:#0a3d8f; --on-bar:#ffffff;   /* ヘッダーの帯 */
+  --link:#1559b8;
+  --accent:#0a3d8f;      /* マイル数の強調 */
+  --plus:#1d7a46; --minus:#b42318;
   --warn-bg:#fff4e0; --warn-ink:#7a4a00; --warn-line:#e8c27a;
   --gold:#8a6414; --gold-soft:#fbf3df;
   --silver:#4c5866; --silver-soft:#eceff2;
@@ -30,13 +31,13 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#15181c; --surface:#1d2126; --surface-2:#252a30; --ink:#e8eaed; --ink-2:#a8b0ba; --line:#363c44; --line-strong:#5b636d;
-  --brand:#5fb08a; --brand-dark:#2c6b4f; --brand-soft:#1f3329; --on-brand:#0f1a14; --bar:#1d3a2d; --on-bar:#e8eaed; --link:#7fb3ec; --accent:#f0a46e;
+  --brand:#7fb2ff; --brand-dark:#23477f; --brand-soft:#172a46; --on-brand:#0b1830; --sky:#5cbaf0; --sky-soft:#13314a; --bar:#10264a; --on-bar:#e8eaed; --link:#8dbbf5; --accent:#9cc6ff;
   --plus:#6cc497; --minus:#ff8a80; --warn-bg:#3a2c12; --warn-ink:#f3d08f; --warn-line:#6b5220;
   --gold:#e3bf6a; --gold-soft:#352b14; --silver:#c3ccd6; --silver-soft:#2b3138; --focus:#7fb3ec;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#15181c; --surface:#1d2126; --surface-2:#252a30; --ink:#e8eaed; --ink-2:#a8b0ba; --line:#363c44; --line-strong:#5b636d;
-  --brand:#5fb08a; --brand-dark:#2c6b4f; --brand-soft:#1f3329; --on-brand:#0f1a14; --bar:#1d3a2d; --on-bar:#e8eaed; --link:#7fb3ec; --accent:#f0a46e;
+  --brand:#7fb2ff; --brand-dark:#23477f; --brand-soft:#172a46; --on-brand:#0b1830; --sky:#5cbaf0; --sky-soft:#13314a; --bar:#10264a; --on-bar:#e8eaed; --link:#8dbbf5; --accent:#9cc6ff;
   --plus:#6cc497; --minus:#ff8a80; --warn-bg:#3a2c12; --warn-ink:#f3d08f; --warn-line:#6b5220;
   --gold:#e3bf6a; --gold-soft:#352b14; --silver:#c3ccd6; --silver-soft:#2b3138; --focus:#7fb3ec;
   color-scheme:dark}

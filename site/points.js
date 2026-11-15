@@ -1,4 +1,4 @@
-// バスツアー会員ポイント：制度の計算ロジック（ブラウザ版）。
+// バスツアー会員マイレージ：制度の計算ロジック（ブラウザ版）。
 // スタッフ画面（index.html）と会員スマホ画面（member/index.html）で共用する。
 // 計算ルールは Python 版 points/ と同じ。データはこのブラウザの localStorage だけに保存する。
 "use strict";
@@ -90,7 +90,7 @@ function grant(mid, kind, points, reason, d, booking_id, operator){
 // 有効期限の近い付与分から順に消費
 function consume(mid, kind, points, reason, d, booking_id, operator){
   if (points <= 0) return null;
-  if (balance(mid, d) < points) throw new PointError("ポイント残高が不足しています");
+  if (balance(mid, d) < points) throw new PointError("マイル残高が不足しています");
   const txn = addTxn(mid, kind, -points, reason, d, booking_id, operator);
   let left = points;
   const lots = db.lots.filter(l => l.member_id === mid && l.expires_on >= d && l.remaining > 0)
@@ -139,10 +139,10 @@ function rankFor(mid, on){
 function adjustPoints(no, points, reason, d, op){
   reason = (reason || "").trim();
   if (!reason) throw new PointError("調整理由を入力してください");
-  if (!Number.isInteger(points) || points === 0) throw new PointError("調整ポイントを整数で入力してください");
+  if (!Number.isInteger(points) || points === 0) throw new PointError("調整マイルを整数で入力してください");
   tx(() => {
     const m = getMember(no);
-    if (m.status !== "active") throw new PointError("退会済み会員のポイントは調整できません");
+    if (m.status !== "active") throw new PointError("退会済み会員のマイルは調整できません");
     if (points > 0) grant(m.id, "adjust", points, reason, d, null, op);
     else consume(m.id, "adjust", -points, reason, d, null, op);
   });
@@ -180,7 +180,7 @@ function createTour({code, name, depart_date, price, bonus_multiplier = 1, bonus
   code = (code || "").trim(); name = (name || "").trim();
   if (!code || !name || !depart_date) throw new PointError("ツアーコード・ツアー名・出発日は必須です");
   if (!(price > 0)) throw new PointError("代金は1円以上で入力してください");
-  if (!(bonus_multiplier >= 1) || !(bonus_points >= 0)) throw new PointError("キャンペーン倍率は1以上、加算ポイントは0以上で入力してください");
+  if (!(bonus_multiplier >= 1) || !(bonus_points >= 0)) throw new PointError("キャンペーン倍率は1以上、加算マイルは0以上で入力してください");
   if (db.tours.some(t => t.code === code)) throw new PointError("同じツアーコードがすでに登録されています");
   return tx(() => { const t = {id:nextId("tour"), code, name, depart_date, price, bonus_multiplier, bonus_points, status:"scheduled"}; db.tours.push(t); return t; });
 }
@@ -197,21 +197,21 @@ function bookTour(no, tourId, points, d, op){
     if (db.bookings.some(b => b.member_id === m.id && b.tour_id === tourId && b.status !== "cancelled"))
       throw new PointError("この会員はすでにこのツアーを予約しています");
     if (!Number.isInteger(points) || points < 0 || points % RULES.REDEEM_UNIT)
-      throw new PointError(`ポイントは${RULES.REDEEM_UNIT}ポイント単位でご利用いただけます`);
-    if (points > maxRedeemable(m.id, t.price, d)) throw new PointError("利用ポイントが残高またはツアー代金を超えています");
+      throw new PointError(`マイルは${RULES.REDEEM_UNIT}マイル単位でご利用いただけます`);
+    if (points > maxRedeemable(m.id, t.price, d)) throw new PointError("利用マイルが残高またはツアー代金を超えています");
     const b = {id:nextId("booking"), member_id:m.id, tour_id:tourId, price:t.price, points_used:points, status:"booked", booked_on:d};
     db.bookings.push(b);
     if (points) consume(m.id, "redeem", points, `ツアー代金に利用（${t.name}）`, d, b.id, op);
     return b;
   });
 }
-// 利用ポイントを元の付与分（元の有効期限）へ戻す
+// 利用マイルを元の付与分（元の有効期限）へ戻す
 function restorePoints(b, d, op){
   const redeemTxns = db.txns.filter(t => t.booking_id === b.id && t.kind === "redeem").map(t => t.id);
   const uses = db.usages.filter(u => redeemTxns.includes(u.txn_id));
   const total = uses.reduce((a,u) => a + u.points, 0);
   if (!total) return;
-  addTxn(b.member_id, "restore", total, "予約取消によるポイント返還", d, b.id, op);
+  addTxn(b.member_id, "restore", total, "予約取消によるマイル返還", d, b.id, op);
   uses.forEach(u => { db.lots.find(l => l.id === u.lot_id).remaining += u.points; });
 }
 function cancelBooking(id, d, op){
@@ -289,7 +289,7 @@ function seed(base){
   bookTour(taro.member_no, t1.id, 300, back(50), "サンプル");
   bookTour(ichiro.member_no, t1.id, 1000, back(50), "サンプル");
   completeTour(t1.id, back(30), "サンプル");
-  const t2 = createTour({code:"2026-KANI", name:"冬の味覚 カニ食べ放題ツアー（ポイント2倍）", depart_date:addDays(base, 40), price:15800, bonus_multiplier:2});
+  const t2 = createTour({code:"2026-KANI", name:"冬の味覚 カニ食べ放題ツアー（マイル2倍）", depart_date:addDays(base, 40), price:15800, bonus_multiplier:2});
   bookTour(hanako.member_no, t2.id, 500, base, "サンプル");
   bookTour(ichiro.member_no, t2.id, 0, base, "サンプル");
   createTour({code:"2026-HAKONE", name:"箱根 彫刻の森と芦ノ湖遊覧", depart_date:addDays(base, 18), price:9800, bonus_points:100});
