@@ -1,4 +1,7 @@
-"""SQLite によるデータ保存。外部DBサーバやクラウドサービスは使用しない。"""
+"""SQLite によるデータ保存。外部DBサーバやクラウドサービスは使用しない。
+
+既存のデータベースを開いたときは、足りない表・列を追加する（migrate）。
+"""
 
 import sqlite3
 from contextlib import contextmanager
@@ -76,7 +79,60 @@ CREATE TABLE IF NOT EXISTS lot_usages (
     lot_id INTEGER NOT NULL REFERENCES point_lots(id),
     points INTEGER NOT NULL
 );
+
+-- スタッフのアカウント（1人1つ）
+CREATE TABLE IF NOT EXISTS staff (
+    id            INTEGER PRIMARY KEY,
+    login         TEXT NOT NULL UNIQUE,
+    name          TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    role          TEXT NOT NULL DEFAULT 'staff',  -- admin / staff
+    active        INTEGER NOT NULL DEFAULT 1,
+    session_gen   INTEGER NOT NULL DEFAULT 0,     -- 増やすと発行済みのログインが無効になる
+    created_on    TEXT NOT NULL
+);
+
+-- 道ツアー（招待制）の招待
+CREATE TABLE IF NOT EXISTS invites (
+    id           INTEGER PRIMARY KEY,
+    tour_id      INTEGER NOT NULL REFERENCES tours(id),
+    member_id    INTEGER NOT NULL REFERENCES members(id),
+    invited_on   TEXT NOT NULL,
+    operator     TEXT NOT NULL DEFAULT '',
+    requested_on TEXT,                -- 会員が「参加を希望する」を押した日
+    UNIQUE (tour_id, member_id)
+);
+
+-- 招待をどの手段で案内したか（app=会員ページ / phone=電話 / mail=郵送）
+CREATE TABLE IF NOT EXISTS invite_contacts (
+    invite_id  INTEGER NOT NULL REFERENCES invites(id),
+    channel    TEXT NOT NULL,
+    contacted_on TEXT NOT NULL,
+    operator   TEXT NOT NULL DEFAULT '',
+    UNIQUE (invite_id, channel)
+);
 """
+
+# 後から追加した列（既存のデータベースには ALTER TABLE で足す）
+COLUMNS = {
+    "members": [
+        ("session_gen", "INTEGER NOT NULL DEFAULT 0"),   # 暗証番号を変えると増やし、他の端末のログインを無効にする
+    ],
+    "tours": [
+        ("kind", "TEXT NOT NULL DEFAULT 'normal'"),        # normal / michi（道ツアー）
+        ("invite_min_tours", "INTEGER"),                    # 道ツアーの招待条件（直近1年の通常ツアー参加回数）
+    ],
+}
+
+
+def migrate(conn):
+    conn.executescript(SCHEMA)
+    for table, cols in COLUMNS.items():
+        have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+        for name, decl in cols:
+            if name not in have:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+
 
 
 def connect(path):
@@ -84,7 +140,9 @@ def connect(path):
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA busy_timeout = 5000")
-    conn.executescript(SCHEMA)
+    if path != ":memory:":
+        conn.execute("PRAGMA journal_mode = WAL")
+    migrate(conn)
     return conn
 
 

@@ -1,0 +1,5 @@
+# points ユーザーの crontab の例（crontab -e で貼り付ける）。
+# 毎日 3:10 に期限切れポイントを失効させ、3:20 にバックアップを取る。30日より古いバックアップは消す。
+10 3 * * * cd /opt/earn-points && POINTS_DB=/var/lib/points/points.sqlite3 /usr/bin/python3 -m points expire
+20 3 * * * cd /opt/earn-points && POINTS_DB=/var/lib/points/points.sqlite3 /usr/bin/python3 -m points backup /var/backups/points/points-$(date +\%F).sqlite3
+30 3 * * * find /var/backups/points -name 'points-*.sqlite3' -mtime +30 -delete

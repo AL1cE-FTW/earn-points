@@ -1,0 +1,20 @@
+# systemd の設定例。/etc/systemd/system/points.service に置く。
+# サーバが再起動しても自動でポイント制度のサーバが立ち上がる。
+[Unit]
+Description=バスツアー会員ポイント（サービス版）
+After=network.target
+
+[Service]
+User=points
+WorkingDirectory=/opt/earn-points
+Environment=POINTS_DB=/var/lib/points/points.sqlite3
+Environment=POINTS_HTTPS=1
+ExecStart=/usr/bin/python3 -m points serve --host 127.0.0.1 --port 8000
+Restart=on-failure
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/points /var/backups/points
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

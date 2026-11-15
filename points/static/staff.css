@@ -1,0 +1,105 @@
+/* スタッフ画面（サービス版）。画面デモ site/michi/admin と同じ見た目 */
+/* Layout: 上に緑の帯（システム名とデモ操作）、PC は左に白いメニュー、右に作業領域。スマホはメニューを横並び */
+.topbar{background:var(--bar);color:var(--on-bar);display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;padding:.5rem 16px;padding-top:calc(.5rem + env(safe-area-inset-top,0px));position:sticky;top:0;z-index:20}
+.topbar .brand{color:inherit;text-decoration:none;font-weight:700;margin-right:auto}
+.topbar .brand small{font-weight:400;margin-left:.5rem;opacity:.85}
+.demo{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .6rem;font-size:var(--t-xs)}
+.demo b{background:var(--warn-bg);color:var(--warn-ink);padding:0 .4rem;border-radius:var(--radius-sm)}
+.demo input{font:inherit;font-size:var(--t-xs);padding:.15rem .3rem;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink)}
+.demo button{font:inherit;font-size:var(--t-xs);padding:.15rem .5rem;border:1px solid rgba(255,255,255,.7);border-radius:var(--radius-sm);background:transparent;color:inherit;cursor:pointer}
+.shell{display:grid;grid-template-columns:1fr;min-height:calc(100vh - 44px)}
+.side{background:var(--surface);border-bottom:1px solid var(--line)}
+.menu{display:flex;overflow-x:auto;scrollbar-width:none}
+.menu :is(a,button){font:inherit;font-size:var(--t-sm);font-weight:700;display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border:0;border-right:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
+.menu :is(a,button):hover{background:var(--surface-2)}
+.menu :is(a,button)[aria-current="page"]{background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 -3px 0 var(--brand)}
+.menu svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.side .links{display:none}
+.work{min-width:0;padding:1rem 16px 4rem;display:grid;gap:1rem;align-content:start;max-width:1200px;width:100%}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.6rem 1rem;justify-content:space-between;border-bottom:2px solid var(--brand);padding-bottom:.4rem}
+.head h1{font-size:var(--t-xl)}
+.head .actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.back{font:inherit;font-size:var(--t-sm);color:var(--link);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.grid{display:grid;gap:1rem}
+.grid > *{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;display:grid;gap:.8rem;align-content:start;min-width:0}
+.card h2{font-size:var(--t-md);display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;border-left:4px solid var(--brand);padding-left:.55rem;line-height:1.3}
+.card h2 .muted{font-weight:400;font-size:var(--t-sm)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);background:var(--surface);border-radius:var(--radius)}
+.kpi{padding:.7rem 1rem;display:grid;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0}
+.kpi span{font-size:var(--t-xs);color:var(--ink-2);font-weight:700}
+.kpi b{font-size:1.5rem;line-height:1.3;font-variant-numeric:tabular-nums}
+.kpi b small{font-size:.55em;margin-left:.15em}
+.kpi em{font-style:normal;font-size:var(--t-xs);color:var(--ink-2)}
+.kpi.warn b{color:var(--minus)}
+.tablewrap{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:560px}
+table.t th{font-size:var(--t-xs);color:var(--ink-2);text-align:left;padding:.45rem .6rem;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
+table.t td{padding:.5rem .6rem;border:1px solid var(--line);vertical-align:middle}
+table.t tbody tr:hover{background:var(--surface-2)}
+table.t .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t .nowrap{white-space:nowrap}
+.linkish{font:inherit;color:var(--link);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-align:left}
+.sub{display:block;font-size:var(--t-xs);color:var(--ink-2);font-weight:400}
+.search{display:flex;gap:.5rem}
+.search .input{max-width:420px}
+.depart{display:grid}
+.depart :is(a,button){font:inherit;color:inherit;background:none;border:0;border-bottom:1px solid var(--line);padding:.55rem 0;display:grid;grid-template-columns:7.5em 1fr auto;gap:.6rem;align-items:baseline;text-align:left;cursor:pointer}
+.depart :is(a,button):last-child{border-bottom:0}
+.depart :is(a,button):hover .nm{text-decoration:underline}
+.depart .d{font-size:var(--t-sm);font-weight:700;font-variant-numeric:tabular-nums}
+.depart .nm{font-weight:700;font-size:var(--t-sm);color:var(--link)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem 1.2rem}
+.form-grid .full{grid-column:1 / -1}
+.form-actions{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.hint{font-size:var(--t-sm);padding:.55rem .8rem;border-radius:var(--radius-sm);background:var(--brand-soft);border:1px solid var(--brand)}
+.hint.bad{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.profile{display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:1.4rem;align-items:start}
+.bal{display:flex;align-items:baseline;gap:.3rem}
+.bal b{font-size:2.2rem;line-height:1.2;color:var(--accent)}
+.bal span{font-weight:700}
+.lbl{font-size:var(--t-xs);color:var(--ink-2);font-weight:700}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:.4rem 1.2rem;margin:0;font-size:var(--t-sm)}
+dl.kv dt{color:var(--ink-2)} dl.kv dd{margin:0;overflow-wrap:anywhere}
+.facts-row{display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;font-size:var(--t-sm);color:var(--ink-2)}
+.facts-row b{color:var(--ink);font-variant-numeric:tabular-nums}
+.danger-zone{border-color:var(--minus)}
+.danger-zone h2{border-left-color:var(--minus)}
+
+.chip-proposal{font-size:var(--t-xs);font-weight:700;padding:0 .5rem;border-radius:var(--radius-sm);background:var(--warn-bg);color:var(--warn-ink);text-decoration:none;white-space:nowrap}
+.michi-card{border:2px solid var(--gold)}
+.michi-card h2{border-left-color:var(--gold)}
+.inv-stats{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:var(--t-sm);color:var(--ink-2)}
+.inv-stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+.st-requested{background:var(--gold-soft);color:var(--gold);border-color:var(--gold)}
+.st-invited{background:var(--brand-soft);color:var(--brand);border-color:var(--brand)}
+.st-none{background:var(--surface-2);color:var(--ink-2)}
+.st-booked2{background:var(--surface);color:var(--plus);border-color:var(--plus)}
+
+@media (min-width:960px){
+  .shell{grid-template-columns:220px 1fr}
+  .side{border-bottom:0;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between}
+  .menu{flex-direction:column;overflow:visible}
+  .menu :is(a,button){border-right:0;border-bottom:1px solid var(--line);padding:.75rem 1rem}
+  .menu :is(a,button)[aria-current="page"]{box-shadow:inset 4px 0 0 var(--brand)}
+  .side .links{display:grid;gap:.25rem;font-size:var(--t-xs);padding:1rem}
+  .work{padding:1.25rem 24px 4rem}
+  .two{grid-template-columns:1.6fr 1fr}
+  .two-even{grid-template-columns:1fr 1fr}
+}
+@media (max-width:959px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .kpi:nth-child(3){border-left:0} .kpi:nth-child(n+3){border-top:1px solid var(--line)} .profile{grid-template-columns:1fr} }
+@media (max-width:560px){ table.t.members{min-width:0} table.t.members :is(th,td):nth-child(3),table.t.members :is(th,td):nth-child(5){display:none} .form-grid{grid-template-columns:1fr} .search{flex-direction:column} }
+
+/* サービス版で追加 */
+.menu :is(a,button){text-decoration:none}
+.topbar .who{font-size:var(--t-xs);display:flex;gap:.6rem;align-items:center}
+.topbar .who form{display:inline}
+.topbar .who button{font:inherit;font-size:var(--t-xs);padding:.15rem .5rem;border:1px solid rgba(255,255,255,.7);border-radius:var(--radius-sm);background:transparent;color:inherit;cursor:pointer}
+form.inline{display:inline}
+.login-box{max-width:420px;margin:3rem auto;padding:0 16px;display:grid;gap:1rem}
+.login-box h1{font-size:var(--t-xl)}
+.print-card{max-width:420px}
+@media print{.topbar,.side,.noprint,.toast{display:none!important}.shell{display:block}body{background:#fff}.card{border:0}}
+.depart a{text-decoration:none}
+.shell > *{min-width:0}
