@@ -22,7 +22,7 @@
     const b = r.booking_id && db.bookings.find(x => x.id === r.booking_id);
     const tn = b ? getTour(b.tour_id).name : "";
     const reason = (r.kind === "earn" || r.kind === "bonus") && tn && !r.reason.includes(tn) ? `${r.reason}／${tn}` : r.reason;
-    return {date: r.created_on, kind: KIND[r.kind], reason, points: r.points};
+    return {date: r.created_on, kind: KIND[r.kind], code: r.kind, reason, tour: tn, points: r.points};
   };
   const isMichiTour = t => hasMichi && isMichi(t);
   const days = d => Math.round((parse(d) - parse(today)) / 864e5);
@@ -108,8 +108,8 @@
     loginHelp: `<section class="card"><div class="st-head"><h2>デモ用のサンプル会員</h2></div>
       <p class="small muted">押すと会員番号と暗証番号が入ります。${hasMichi ? "佐藤様・田中様には道ツアーの招待が届いています。" : ""}</p>
       <div class="samples">${samples.map(m => { const r = rankFor(m.id, today);
-        return `<button type="button" data-fill="${m.member_no}" data-pin="${esc(m.pin)}">${esc(m.name)}<small>${r.name}・${yen(balance(m.id, today))}マイル</small></button>`; }).join("")}</div></section>
-      <p class="small muted">スタッフ画面（デモ）で予約やマイル付与をすると、同じブラウザならこの画面に反映されます。</p>`,
+        return `<button type="button" data-fill="${m.member_no}" data-pin="${esc(m.pin)}">${esc(m.name)}<small>${r.name}・${yen(balance(m.id, today))}pt</small></button>`; }).join("")}</div></section>
+      <p class="small muted">スタッフ画面（デモ）で予約やポイント付与をすると、同じブラウザならこの画面に反映されます。</p>`,
     links: JSON.parse(me.dataset.links || "[]"),
   };
   // スタッフ画面（別タブ）での変更をすぐ反映する

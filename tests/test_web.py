@@ -77,10 +77,10 @@ class StaffWebTest(unittest.TestCase):
         _, loc, _ = self.post("/admin/tours", {"code": "T1", "name": "箱根", "depart_date": "2026-10-02", "price": "9,800", "kind": "normal"}, token)
         tour_path = loc.split("?")[0]
         _, loc, _ = self.post(tour_path + "/book", {"member_no": member_no, "points": "150"}, token)
-        self.assertIn("100マイル単位", loc)
+        self.assertIn("100ポイント単位", loc)
         self.post(tour_path + "/book", {"member_no": member_no, "points": "300"}, token)
         _, loc, _ = self.post(tour_path + "/complete", {"absent_list": []}, token)
-        self.assertIn("295マイル を付与", loc)  # (9800-300)//100=95 + 誕生月200
+        self.assertIn("295pt を付与", loc)  # (9800-300)//100=95 + 誕生月200
         ops = {r[0] for r in self.app.conn.execute("SELECT operator FROM point_txns WHERE kind!='bonus' OR reason!='入会特典'")}
         self.assertIn("管理者", ops)
 
@@ -118,12 +118,12 @@ class StaffWebTest(unittest.TestCase):
                                                "kind": "michi", "invite_min_tours": "3"}, token)
         _, _, body = self.c.req("GET", loc.split("?")[0])
         self.assertIn("招待を送る対象はいません", body)
-        self.assertIn("道ツアー特典 <b>+1,000マイル</b>", body)
+        self.assertIn("道ツアー特典 <b>+1,000pt</b>", body)
 
     def test_public_pages(self):
         status, _, body = self.app.handle("GET", "/rules")
         self.assertEqual(status, 200)
-        self.assertIn("100円ごとに1マイル", body)
+        self.assertIn("100円ごとに1ポイント", body)
         self.assertNotRegex(body, r"(src|href)=['\"]https?://")  # 外部リソースを読み込まない
         self.assertEqual(self.app.handle("GET", "/")[1][0], ("Location", "/app/"))
         status, hdrs, _ = self.app.handle("GET", "/app/manifest.webmanifest")
